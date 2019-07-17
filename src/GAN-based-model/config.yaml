@@ -1,0 +1,41 @@
+#Source path
+train_feat_path: 'timit/audio/timit-train-mfcc-nor.pkl'
+train_orc_bnd_path: 'timit/audio/timit-train-orc-bnd.pkl'
+train_phn_path: 'timit/audio/timit-train-phn.pkl'
+dev_feat_path: 'timit/audio/timit-test-mfcc-nor.pkl'
+dev_orc_bnd_path: 'timit/audio/timit-test-orc-bnd.pkl'
+dev_phn_path: 'timit/audio/timit-test-phn.pkl'
+#Target path
+match_target_path: 'timit/text/match_lm.48' 
+nonmatch_target_path: 'timit/text/nonmatch_lm.48'
+
+# Model
+gen_hidden_size: 512
+dis_emb_size: 256
+dis_hidden_1_size: 256
+dis_hidden_2_size: 256
+seg_loss_ratio: 0.5
+penalty_ratio: 10
+frame_temp: 0.9
+
+# Data loader
+phn_max_length: 75
+feat_max_length: 777
+concat_window: 11
+sample_var: 0.15
+repeat: 6
+
+# Train
+batch_size: 50
+epoch: 2000 # for supervised training 
+step: 100 # for unsupervised training 
+print_step: 100
+eval_step: 200 
+gen_iter: 1
+dis_iter: 3
+gen_lr: 0.001
+dis_lr: 0.002
+sup_lr: 0.001
+
+
+
