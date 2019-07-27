@@ -5,7 +5,7 @@ TIMIT_DIR=$2
 CODE_DIR=$ROOT_DIR/src/process-timit
 DATA_DIR=$ROOT_DIR/data
 FEATURE_DIR=$DATA_DIR/timit_feature
-GAS_DIR=$DATA_DIR/gas
+GAS_DIR=$DATA_DIR/timit_gas
 
 
 [ -d "$FEATURE_DIR" ] || mkdir -p $FEATURE_DIR

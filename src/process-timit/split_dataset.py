@@ -135,9 +135,9 @@ def process_data(gas_dir, timit_dir, save_dir, data_type='train', show_bnd_score
     if show_bnd_score: print_bound_score(precision_list, recall_list, data_type)
 
     # Build processed directory
-    result_directory = f'{save_dir}/timit/result'
-    audio_directory  = f'{save_dir}/timit/audio'
-    text_directory   = f'{save_dir}/timit/text'
+    result_directory = f'{save_dir}/result'
+    audio_directory  = f'{save_dir}/timit_for_GAN/audio'
+    text_directory   = f'{save_dir}/timit_for_GAN/text'
 
     if not os.path.exists(result_directory):
         os.makedirs(result_directory)
@@ -147,9 +147,9 @@ def process_data(gas_dir, timit_dir, save_dir, data_type='train', show_bnd_score
         os.makedirs(text_directory)
 
     # Save as pickle file
-    pk.dump(np.array(meta),      open(f'{audio_directory}/timit-{data_type}-meta.pkl'      , 'wb'))
-    pk.dump(np.array(gas_bnd),   open(f'{audio_directory}/timit-{data_type}-gas-bnd.pkl'   , 'wb'))
-    pk.dump(np.array(orc_bnd),   open(f'{audio_directory}/timit-{data_type}-orc-bnd.pkl'   , 'wb'))
+    pk.dump(meta,                open(f'{audio_directory}/timit-{data_type}-meta.pkl'      , 'wb'))
+    pk.dump(np.array(gas_bnd),   open(f'{audio_directory}/timit-{data_type}-uns1-bnd.pkl'   , 'wb'))
+    pk.dump(np.array(orc_bnd),   open(f'{audio_directory}/timit-{data_type}-orc1-bnd.pkl'   , 'wb'))
     pk.dump(np.array(phn),       open(f'{audio_directory}/timit-{data_type}-phn.pkl'       , 'wb'))
     pk.dump(np.array(length),    open(f'{audio_directory}/timit-{data_type}-length.pkl'    , 'wb'))
     pk.dump(np.array(wav),       open(f'{audio_directory}/timit-{data_type}-mfcc-nor.pkl'  , 'wb'))

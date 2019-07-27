@@ -1,13 +1,13 @@
 #Source path
-train_feat_path: 'timit/audio/timit-train-mfcc-nor.pkl'
-train_orc_bnd_path: 'timit/audio/timit-train-orc-bnd.pkl'
-train_phn_path: 'timit/audio/timit-train-phn.pkl'
-dev_feat_path: 'timit/audio/timit-test-mfcc-nor.pkl'
-dev_orc_bnd_path: 'timit/audio/timit-test-orc-bnd.pkl'
-dev_phn_path: 'timit/audio/timit-test-phn.pkl'
+train_feat_path: 'timit_for_GAN/audio/timit-train-mfcc-nor.pkl'
+train_orc_bnd_path: 'timit_for_GAN/audio/timit-train-orc1-bnd.pkl'
+train_phn_path: 'timit_for_GAN/audio/timit-train-phn.pkl'
+dev_feat_path: 'timit_for_GAN/audio/timit-test-mfcc-nor.pkl'
+dev_orc_bnd_path: 'timit_for_GAN/audio/timit-test-orc1-bnd.pkl'
+dev_phn_path: 'timit_for_GAN/audio/timit-test-phn.pkl'
 #Target path
-match_target_path: 'timit/text/match_lm.48' 
-nonmatch_target_path: 'timit/text/nonmatch_lm.48'
+match_target_path: 'timit_for_GAN/text/match_lm.48' 
+nonmatch_target_path: 'timit_for_GAN/text/nonmatch_lm.48'
 
 # Model
 gen_hidden_size: 512
