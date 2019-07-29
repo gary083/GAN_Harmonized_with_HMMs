@@ -1,8 +1,8 @@
 
 #Path
 ROOT_DIR=/home/guanyu/guanyu/handoff
-DATA_PATH=${ROOT_DIR}/data
 TIMIT_DIR=/home/guanyu/guanyu/timit_data
+DATA_PATH=${ROOT_DIR}/data
 
 #Boundaries type: orc / uns
 bnd_type=uns
