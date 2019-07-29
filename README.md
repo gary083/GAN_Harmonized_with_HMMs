@@ -13,30 +13,24 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 3. srilm (can be built with kaldi/tools/install_srilm.sh)
 
 ### Data preprocess
-1. Modify **path.sh** with your path of Kaldi and srilm.
-2. Modify **config** with your code path and timit path.
-3. Run 
-```
-$ bash preprocess.sh
-```
+1. Modify `path.sh` with your path of Kaldi and srilm.
+2. Modify `config` with your code path and timit path.
+3. Run `$ bash preprocess.sh`
 
-- This script will extract features and split dataset into train/test sets.
+- This script will extract features and split dataset into train/test set.
 
 - The data which WFST-decoder needed also generate from here.
 
 ### Train model
-1. Modify the experimental setting in **config**.
-2. Modify the GAN-based model's parameter in **src/GAN-based-model/config.yaml**.
-2. Run 
-```
-$ bash run.sh
-```
+1. Modify the experimental setting in `config`.
+2. Modify the GAN-based model's parameter in `src/GAN-based-model/config.yaml`.
+2. Run `$ bash run.sh`
 
--This scipt contains the training flow for GAN-based model and HMM model.
+- This scipt contains the training flow for GAN-based model and HMM model.
 
--GAN-based model generated the transcription for training HMM model.
+- GAN-based model generated the transcription for training HMM model.
 
--HMM model refined the phoneme boundaries for training GAN-based model.
+- HMM model refined the phoneme boundaries for training GAN-based model.
 
 ## Reference
 [Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100?fbclid=IwAR3QG6ihbKmLz-e4BdOkRG3AaelP5HGkzLkavzRSF6IORN90BkHX1NLkpRo),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
@@ -47,3 +41,6 @@ $ bash run.sh
 
 ##Acknowledgement
 **Special thanks to Che-Ping Tsai (jackyyy0228) !**
+
+##Hyperparameters in `config`
+
