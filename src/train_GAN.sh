@@ -1,11 +1,4 @@
 #!/bin/bash
-# ROOT_DIR=/home/guanyu/guanyu/handoff
-# DATA_PATH=$ROOT_DIR/data
-
-# bnd_type=orc
-# setting=match 
-# jobs=8
-. config
 iteration=$1
 
 prefix=${bnd_type}_iter${iteration}_${setting}_gan

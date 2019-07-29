@@ -1,8 +1,4 @@
 #!/bin/bash
-
-. ./cmd.sh
-. ./path.sh
-. config
 iteration=$1
 
 gan_prefix=${bnd_type}_iter${iteration}_${setting}_gan
@@ -23,7 +19,7 @@ python3 local/prepare_data.py --bnd_type $bnd_type --lm_type $setting \
 bash run.sh $DATA_PATH $HMM_PATH $setting $jobs
 
 # Refined phoneme boundaries
-bash local/ali_to_frame.sh $HMM_PATH $jobs
+bash local/ali_to_frame.sh $HMM_PATH $jobs 
 cd ../
 python3 get_new_bound.py --bnd_type $bnd_type --iteration $iteration \
                         --prefix $hmm_prefix --data_path $DATA_PATH
