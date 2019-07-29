@@ -13,6 +13,8 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 3. srilm (can be built with kaldi/tools/install_srilm.sh)
 
 ### Data preprocess
+- Usage:
+
 1. Modify `path.sh` with your path of Kaldi and srilm.
 2. Modify `config` with your code path and timit path.
 3. Run `$ bash preprocess.sh`
@@ -22,6 +24,8 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 - The data which WFST-decoder needed also generate from here.
 
 ### Train model
+- Usage:
+
 1. Modify the experimental setting in `config`.
 2. Modify the GAN-based model's parameter in `src/GAN-based-model/config.yaml`.
 2. Run `$ bash run.sh`
@@ -43,7 +47,9 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 **Special thanks to Che-Ping Tsai (jackyyy0228) !**
 
 ## Hyperparameters in `config`
-`bnd_type` : type of initial phoneme boundaries (orc/uns)
+`bnd_type` : type of initial phoneme boundaries (orc/uns).
+
 `setting` : matched and nonmatched case in [our paper](#Citation) (match/nonmatch).
+
 `jobs` : number of jobs in parallel (depends on your decive).
 
