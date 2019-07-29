@@ -39,8 +39,11 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 1.  The [WFST decoder](https://github.com/jackyyy0228/WFST-decoder-for-phoneme-posterior) for phoneme classifier<sup>[1](#Reference)</sup> .
 2.  The training scripts for [Unsupervised HMM](https://github.com/jackyyy0228/Unsupervised_HMM) <sup>[1](#Reference)</sup> .
 
-##Acknowledgement
+## Acknowledgement
 **Special thanks to Che-Ping Tsai (jackyyy0228) !**
 
-##Hyperparameters in `config`
+## Hyperparameters in `config`
+`bnd_type` : type of initial phoneme boundaries (orc/uns)
+`setting` : matched and nonmatched case in [our paper](#Citation) (match/nonmatch).
+`jobs` : number of jobs in parallel (depends on your decive).
 
