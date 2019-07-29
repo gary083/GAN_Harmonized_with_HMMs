@@ -1,7 +1,20 @@
 #!/bin/bash
 . path.sh
-dir=$1
+# dir=$1
 
-gunzip -c  $dir/ali.*.gz | ali-to-phones --per-frame $dir/final.mdl ark:- ark,t:- | utils/int2sym.pl  -f 2- data/lang/phones.txt  | sort > $dir/ali_output.txt
+word_symtab=data/lang/words.txt
+phone_symtab=data/lang/phones.txt
+exp=$1
+mdl=$exp/mono/final.mdl
+lmwt=7
+penalty=1
+nj=$2
+typ=mono
 
-python3 local/eval_bound.py $dir/ali_output.txt
+dir=$exp/mono
+
+gunzip -c  $dir/ali.*.gz | ali-to-phones --per-frame $mdl ark:- ark,t:- | utils/int2sym.pl  -f 2- data/lang/phones.txt  | sort > $exp/phones_ali.txt
+
+echo "The path of alignment file is $exp/phones_ali.txt"
+echo "Done."
+

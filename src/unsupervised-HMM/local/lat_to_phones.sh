@@ -1,5 +1,5 @@
 #!/bin/bash
-. path.sh
+# . path.sh
 
 word_symtab=data/lang/words.txt
 phone_symtab=data/lang/phones.txt
@@ -10,7 +10,7 @@ penalty=1
 nj=$2
 typ=mono
 
-. parse_options.sh || exit 1;
+. ./utils/parse_options.sh || exit 1;
 
 decode_dir=$exp/mono/decode_train
 
@@ -29,7 +29,7 @@ done
 wait
 
 cat $decode_dir/phones_ali.*.txt | sort > $exp/phones_ali.txt
-#rm $decode_dir/ali_output.*.txt $decode_dir/phones_ali.*.txt
+rm $decode_dir/ali_output.*.txt $decode_dir/phones_ali.*.txt
 
 echo "The path of alignment file is $exp/phones_ali.txt"
 echo "Done."

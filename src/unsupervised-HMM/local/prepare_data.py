@@ -57,7 +57,6 @@ if __name__ == '__main__':
     train_data_path = data_dir + '/timit_for_HMM/train'
     test_data_path = data_dir + '/timit_for_HMM/test'
     train_data_correct_path = data_dir + '/timit_for_HMM/train_correct'
-
     train_wavs_names = pkl.load(open(f'{args.data_path}/timit_for_GAN/audio/timit-train-meta.pkl','rb'))
     train_wav_path  = f'{args.timit_path}/train' 
     train_trans_path = f'{args.data_path}/save/{args.bnd_type}_iter{args.iteration}_{args.lm_type}_gan/train_output.txt'

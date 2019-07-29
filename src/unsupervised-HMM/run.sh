@@ -1,8 +1,8 @@
 #!/bin/bash
 
-stage=4
-. ./cmd.sh
-. ./path.sh
+stage=0
+# . ./cmd.sh
+# . ./path.sh
 
 # you might not want to do this for interactive shells.
 set -e
@@ -71,7 +71,6 @@ if [ $stage -le 2 ]; then
   steps/decode.sh --nj $nj --cmd "$decode_cmd" $exp/mono/graph \
                   $hmm_data/train $exp/mono/decode_train
 fi
-
 
 if [ $stage -le 3 ]; then
   new_data=$hmm_data/train_mono
