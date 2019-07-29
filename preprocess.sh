@@ -5,7 +5,7 @@
 . ./path.sh
 
 # Process TIMIT
-bash process-timit/process_timit.sh $ROOT_DIR $TIMIT_DIR
+# bash process-timit/process_timit.sh $ROOT_DIR $TIMIT_DIR
 
 # Data preparation for KALDI(WFST)
 cd src/WFST-decoder
