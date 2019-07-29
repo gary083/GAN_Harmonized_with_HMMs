@@ -36,6 +36,13 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 
 - HMM model refined the phoneme boundaries for training GAN-based model.
 
+## Hyperparameters in `config`
+`bnd_type` : type of initial phoneme boundaries (orc/uns).
+
+`setting` : matched and nonmatched case in [our paper](#Citation) (match/nonmatch).
+
+`jobs` : number of jobs in parallel (depends on your decive).
+
 ## Reference
 [Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100?fbclid=IwAR3QG6ihbKmLz-e4BdOkRG3AaelP5HGkzLkavzRSF6IORN90BkHX1NLkpRo),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
 
@@ -46,10 +53,5 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 ## Acknowledgement
 **Special thanks to Che-Ping Tsai (jackyyy0228) !**
 
-## Hyperparameters in `config`
-`bnd_type` : type of initial phoneme boundaries (orc/uns).
 
-`setting` : matched and nonmatched case in [our paper](#Citation) (match/nonmatch).
-
-`jobs` : number of jobs in parallel (depends on your decive).
 
