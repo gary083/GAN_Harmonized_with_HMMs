@@ -29,7 +29,3 @@ for iteration in $(seq 1 $total_iter); do
   bash train_HMM.sh $iteration || exit 0
 done
 
-
-# iteration=2
-# bash train_GAN.sh $iteration
-# bash train_HMM.sh $iteration
