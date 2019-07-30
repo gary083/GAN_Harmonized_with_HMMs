@@ -37,7 +37,7 @@ python main.py --mode train --cuda_id 0 --bnd_type uns
 
 `save_dir`: directory where your save your model and results.
 
-`config`: path to the model config.
+`config`: path to model config.
 
 ## Hyperparameters in `config.yaml`
 
