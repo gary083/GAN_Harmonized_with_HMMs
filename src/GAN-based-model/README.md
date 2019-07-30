@@ -10,17 +10,26 @@ usage: main.py [-h] [--mode MODE] [--model_type MODEL_TYPE]
                [--iteration ITERATION] [--aug] [--data_dir DATA_DIR]
                [--save_dir SAVE_DIR] [--config CONFIG]
 ```
-2. Training Phase 
+- Example:
 ```
-python3 main.py --mode train --cuda_id 0 
-				--bnd_type  [boundaries-type]
-				--setting   [real-data-type] 
-				--iteration [iteration-of-HMM-hamonization]
-				--data_dir  [path-to-data-directory]
-				--save_dir  [path-to-save-directory]
-				--config    [path-to-config]
+python main.py --mode train --cuda_id 0 --bnd_type uns 
+               --setting match --iteration 2 
+               --data_dir [path-to-data]
+               --save_dir [path-to-save-directory]
+               --config [path-to-config]
+```
 
-```
+2. Argument
+`mode`:
+`model_type`:
+`cuda_id`:
+`bnd_type`:
+`setting`:
+`iteration`:
+`data_dir`:
+`save_dir`:
+`config`:
+
 
 
 ## Hyperparameters in `config.yaml`

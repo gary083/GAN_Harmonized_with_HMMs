@@ -3,7 +3,7 @@ iteration=$1
 
 gan_prefix=${bnd_type}_iter${iteration}_${setting}_gan
 hmm_prefix=${bnd_type}_iter${iteration}_${setting}_hmm
-
+echo $gan_prefix
 GAN_PATH=$DATA_PATH/save/${gan_prefix}
 HMM_PATH=$DATA_PATH/save/${hmm_prefix}
 
