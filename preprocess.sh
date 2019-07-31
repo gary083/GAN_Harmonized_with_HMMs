@@ -1,11 +1,11 @@
 #!/bin/bash
 
-. config
+. ./config.sh
 . ./cmd.sh
 . ./path.sh
 
 # Process TIMIT
-# bash process-timit/process_timit.sh $ROOT_DIR $TIMIT_DIR
+bash src/process-timit/process_timit.sh $ROOT_DIR $TIMIT_DIR
 
 # Data preparation for KALDI(WFST)
 cd src/WFST-decoder
