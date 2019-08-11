@@ -12,6 +12,8 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 
 3. srilm (can be built with kaldi/tools/install_srilm.sh)
 
+4. librosa
+
 ### Data preprocess
 - Usage:
 
