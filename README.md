@@ -49,7 +49,7 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 `jobs` : number of jobs in parallel (depends on your decive).
 
 ## Reference
-[Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100?fbclid=IwAR3QG6ihbKmLz-e4BdOkRG3AaelP5HGkzLkavzRSF6IORN90BkHX1NLkpRo),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
+[Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
 
 ## Links (Special thanks)
 1.  The [WFST decoder](https://github.com/jackyyy0228/WFST-decoder-for-phoneme-posterior) for phoneme classifier<sup>[1](#Reference)</sup> .
