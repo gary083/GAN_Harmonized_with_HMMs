@@ -1,6 +1,6 @@
 # GAN-based model
 
-This is the GAN-based model's implementation of [our paper](#Citation).
+This is the GAN-based model's implementation of [our paper](https://arxiv.org/abs/1904.04100).
 
 ## How to use
 1. Different setting could be done by adding different arguments.
@@ -87,4 +87,4 @@ python main.py --mode train --cuda_id 0 --bnd_type uns
 
 
 ## Reference
-[Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100?fbclid=IwAR3QG6ihbKmLz-e4BdOkRG3AaelP5HGkzLkavzRSF6IORN90BkHX1NLkpRo),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
+[Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*

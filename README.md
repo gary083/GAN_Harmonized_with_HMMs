@@ -1,6 +1,6 @@
 # GAN_Harmonized_with_HMMs
 
-This is the implementation of [our paper](#Citation). In this paper, we proposed an unsupervised phoneme recogntion system which can achieve 33.1% phoneme error rate on TIMIT.
+This is the implementation of [our paper](https://arxiv.org/abs/1904.04100). In this paper, we proposed an unsupervised phoneme recogntion system which can achieve 33.1% phoneme error rate on TIMIT.
 This method developed a GAN-based model to achieve unsupervised phoneme recognition and we further use a set of HMMs to work in harmony with the GAN.
 
 ## How to use
@@ -44,7 +44,7 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 ## Hyperparameters in `config.sh`
 `bnd_type` : type of initial phoneme boundaries (orc/uns).
 
-`setting` : matched and nonmatched case in [our paper](#Citation) (match/nonmatch).
+`setting` : matched and nonmatched case in [our paper](https://arxiv.org/abs/1904.04100) (match/nonmatch).
 
 `jobs` : number of jobs in parallel (depends on your decive).
 
