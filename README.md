@@ -1,6 +1,6 @@
 # GAN_Harmonized_with_HMMs
 
-This is the implementation of [our paper](https://arxiv.org/abs/1904.04100). In this paper, we proposed an unsupervised phoneme recogntion system which can achieve 33.1% phoneme error rate on TIMIT.
+This is the implementation of [our paper](https://arxiv.org/abs/1904.04100). In this paper, we proposed an unsupervised speech (phoneme) recogntion system which can achieve 33.1% phoneme error rate on TIMIT.
 This method developed a GAN-based model to achieve unsupervised phoneme recognition and we further use a set of HMMs to work in harmony with the GAN.
 
 ## How to use
@@ -49,9 +49,9 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 `jobs` : number of jobs in parallel (depends on your decive).
 
 ## Reference
-[Completely Unsupervised Phoneme Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
+[Completely Unsupervised Speech Recognition By A Generative AdversarialNetwork Harmonized With Iteratively Refined Hidden Markov Models](https://arxiv.org/abs/1904.04100),  Kuan-Yu Chen, Che-Ping Tsai *et.al.*
 
-## Links (Special thanks)
+## Links 
 1.  The [WFST decoder](https://github.com/jackyyy0228/WFST-decoder-for-phoneme-posterior) for phoneme classifier<sup>[1](#Reference)</sup> .
 2.  The training scripts for [Unsupervised HMM](https://github.com/jackyyy0228/Unsupervised_HMM) <sup>[1](#Reference)</sup> .
 
