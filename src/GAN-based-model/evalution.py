@@ -6,7 +6,9 @@ import numpy as np
 def frame_eval(sess, g, data_loader):
     total_frame = 0.0
     total_error = 0.0
-    for batch_frame_feat, batch_frame_label, batch_frame_len in data_loader.get_batch(256):
+    for batch in data_loader.get_batch(256):
+        batch_frame_feat, batch_frame_label, batch_frame_len = \
+            batch['source'], batch['frame_label'], batch['source_length']
         feed_dict = {
             g.frame_feat: batch_frame_feat,
             g.frame_len: batch_frame_len,

@@ -85,6 +85,7 @@ def main(args, config):
             os.path.join(args.data_dir, config.train_feat_path),
             os.path.join(args.data_dir, config.train_phn_path),
             os.path.join(args.data_dir, config.train_orc_bnd_path),
+            os.path.join(args.data_dir, config.train_meta_path),
             train_bnd_path=train_bnd_path,
             target_path=target_path,
             data_length=data_length,
@@ -98,6 +99,7 @@ def main(args, config):
             os.path.join(args.data_dir, config.dev_feat_path),
             os.path.join(args.data_dir, config.dev_phn_path),
             os.path.join(args.data_dir, config.dev_orc_bnd_path),
+            os.path.join(args.data_dir, config.dev_meta_path),
             phn_map_path=phn_map_path,
             name='DATA LOADER(dev)',
         )
@@ -109,6 +111,7 @@ def main(args, config):
             os.path.join(args.data_dir, config.train_feat_path),
             os.path.join(args.data_dir, config.train_phn_path),
             os.path.join(args.data_dir, config.train_orc_bnd_path),
+            os.path.join(args.data_dir, config.train_meta_path),
             phn_map_path=phn_map_path,
             name='DATA LOADER(evaluation train)',
         )
@@ -118,6 +121,7 @@ def main(args, config):
             os.path.join(args.data_dir, config.dev_feat_path),
             os.path.join(args.data_dir, config.dev_phn_path),
             os.path.join(args.data_dir, config.dev_orc_bnd_path),
+            os.path.join(args.data_dir, config.dev_meta_path),
             phn_map_path=phn_map_path,
             name='DATA LOADER(evaluation test)',
         )

@@ -1,10 +1,10 @@
 import sys
 
-
 from evalution import *
 from lib.discriminator import *
 from lib.module import *
 from model_base import ModelBase
+from lib.tf_utils import output_framewise_prob, build_session
 
 
 class UnsModel(ModelBase):
@@ -99,12 +99,7 @@ class UnsModel(ModelBase):
         sys.stdout.flush()
 
     def build_session(self):
-        print('Building Session...')
-        session = tf.Session(graph=self.graph)
-        with self.graph.as_default():
-            session.run(tf.global_variables_initializer())
-            saver = tf.train.Saver(max_to_keep=3)
-        return session, saver
+        return build_session(self.graph)
 
     def train(
             self,
@@ -183,28 +178,13 @@ class UnsModel(ModelBase):
         self.saver.restore(self.sess, tf.train.latest_checkpoint(save_dir))
 
     def output_framewise_prob(self, output_path, data_loader):
-        total_frame = 0.0
-        total_error = 0.0
-        posterior_prob = []
-        for batch_frame_feat, batch_frame_label, batch_frame_len in data_loader.get_batch(256):
-            feed_dict = {
-                self.frame_feat: batch_frame_feat,
-                self.frame_len: batch_frame_len,
-                self.frame_temp: 0.9,
-            }
-            [batch_frame_pred, batch_frame_prob] = self.sess.run(
-                [self.frame_pred, self.frame_prob],
-                feed_dict=feed_dict,
-            )
-            frame_num, frame_error = evaluate_frame_result(
-                batch_frame_pred,
-                batch_frame_label,
-                batch_frame_len,
-                data_loader.phn_mapping,
-            )
-            total_frame += frame_num
-            total_error += frame_error
-            posterior_prob.extend(batch_frame_prob)
-        total_fer = total_error / total_frame * 100
-        print(f'FER: {total_fer:.4f}, {output_path}')
-        pk.dump(np.array(posterior_prob), open(output_path, 'wb'))
+        output_framewise_prob(
+            data_loader,
+            self.sess,
+            self.frame_feat,
+            self.frame_len,
+            self.frame_temp,
+            self.frame_pred,
+            self.frame_prob,
+            output_path,
+        )

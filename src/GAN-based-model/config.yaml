@@ -2,9 +2,11 @@
 train_feat_path: 'timit_for_GAN/audio/timit-train-mfcc-nor.pkl'
 train_orc_bnd_path: 'timit_for_GAN/audio/timit-train-orc1-bnd.pkl'
 train_phn_path: 'timit_for_GAN/audio/timit-train-phn.pkl'
+train_meta_path: 'timit_for_GAN/audio/timit-train-meta.pkl'
 dev_feat_path: 'timit_for_GAN/audio/timit-test-mfcc-nor.pkl'
 dev_orc_bnd_path: 'timit_for_GAN/audio/timit-test-orc1-bnd.pkl'
 dev_phn_path: 'timit_for_GAN/audio/timit-test-phn.pkl'
+dev_meta_path: 'timit_for_GAN/audio/timit-test-meta.pkl'
 #Target path
 match_target_path: 'timit_for_GAN/text/match_lm.48'
 nonmatch_target_path: 'timit_for_GAN/text/nonmatch_lm.48'
