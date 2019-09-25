@@ -18,7 +18,6 @@ import re
 import sys
 from collections import defaultdict
 
-
 parser = argparse.ArgumentParser(
     description='''This script takes an existing ARPA lanugage model
     and limits the <unk> history to make it suitable
@@ -71,45 +70,45 @@ def find_and_replace_unks(old_lm_lines, max_ngrams, skip_rows):
     new_lm_lines = old_lm_lines[:skip_rows]
 
     for i in range(skip_rows, len(old_lm_lines)):
-            line = old_lm_lines[i].strip(" \t\r\n")
+        line = old_lm_lines[i].strip(" \t\r\n")
 
-            if "\{}-grams:".format(3) in line:
-                passed_2grams = True
-            if "\{}-grams:".format(max_ngrams) in line:
-                last_ngram = True
+        if "\{}-grams:".format(3) in line:
+            passed_2grams = True
+        if "\{}-grams:".format(max_ngrams) in line:
+            last_ngram = True
 
-            for i in range(max_ngrams):
-                if "\{}-grams:".format(i+1) in line:
-                    ngram = i+1
+        for i in range(max_ngrams):
+            if "\{}-grams:".format(i + 1) in line:
+                ngram = i + 1
 
-            # remove any n-gram states of the form: foo <unk> -> X
-            # that is, any n-grams of order > 2 where <unk>
-            # is the second-to-last word
-            # here we skip 1-gram and 2-gram sections of arpa
+        # remove any n-gram states of the form: foo <unk> -> X
+        # that is, any n-grams of order > 2 where <unk>
+        # is the second-to-last word
+        # here we skip 1-gram and 2-gram sections of arpa
 
-            if passed_2grams:
-                g_unk = unk_pattern.search(line)
-                if g_unk:
-                    ngram_diffs[ngram] = ngram_diffs[ngram] - 1
-                    unk_row_count += 1
-                    continue
+        if passed_2grams:
+            g_unk = unk_pattern.search(line)
+            if g_unk:
+                ngram_diffs[ngram] = ngram_diffs[ngram] - 1
+                unk_row_count += 1
+                continue
 
-            # remove backoff probability from the lines that end with <unk>
-            # for example, the -0.64 in -4.09 every <unk> -0.64
-            # here we skip the last n-gram section because it
-            # doesn't include backoff probabilities
+        # remove backoff probability from the lines that end with <unk>
+        # for example, the -0.64 in -4.09 every <unk> -0.64
+        # here we skip the last n-gram section because it
+        # doesn't include backoff probabilities
 
-            if not last_ngram:
-                g_backoff = backoff_pattern.search(line)
-                if g_backoff:
-                    updated_row = whitespace_pattern.split(g_backoff.group(0))[:-1]
-                    updated_row = updated_row[0] + \
-                        "\t" + " ".join(updated_row[1:]) + "\n"
-                    new_lm_lines.append(updated_row)
-                    backoff_row_count += 1
-                    continue
+        if not last_ngram:
+            g_backoff = backoff_pattern.search(line)
+            if g_backoff:
+                updated_row = whitespace_pattern.split(g_backoff.group(0))[:-1]
+                updated_row = updated_row[0] + \
+                              "\t" + " ".join(updated_row[1:]) + "\n"
+                new_lm_lines.append(updated_row)
+                backoff_row_count += 1
+                continue
 
-            new_lm_lines.append(line+"\n")
+        new_lm_lines.append(line + "\n")
 
     print("Removed {} lines including {} as second-to-last term.".format(
         unk_row_count, args.oov_dict_entry), file=sys.stderr)
@@ -151,7 +150,7 @@ def write_new_lm(new_lm_lines, ngram_counts, ngram_diffs):
 
 def main():
     old_lm_lines = read_old_lm()
-    max_ngrams, skip_rows,  ngram_counts = get_ngram_stats(old_lm_lines)
+    max_ngrams, skip_rows, ngram_counts = get_ngram_stats(old_lm_lines)
     new_lm_lines, ngram_diffs = find_and_replace_unks(
         old_lm_lines, max_ngrams, skip_rows)
     write_new_lm(new_lm_lines, ngram_counts, ngram_diffs)

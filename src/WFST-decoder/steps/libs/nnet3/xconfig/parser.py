@@ -9,79 +9,79 @@ from __future__ import print_function
 
 import logging
 import sys
+
+import libs.common as common_lib
 import libs.nnet3.xconfig.layers as xlayers
 import libs.nnet3.xconfig.utils as xutils
 
-import libs.common as common_lib
-
-
 # We have to modify this dictionary when adding new layers
 config_to_layer = {
-        'input' : xlayers.XconfigInputLayer,
-        'output' : xlayers.XconfigTrivialOutputLayer,
-        'output-layer' : xlayers.XconfigOutputLayer,
-        'relu-layer' : xlayers.XconfigBasicLayer,
-        'relu-renorm-layer' : xlayers.XconfigBasicLayer,
-        'relu-batchnorm-dropout-layer' : xlayers.XconfigBasicLayer,
-        'relu-dropout-layer': xlayers.XconfigBasicLayer,
-        'relu-batchnorm-layer' : xlayers.XconfigBasicLayer,
-        'relu-batchnorm-so-layer' : xlayers.XconfigBasicLayer,
-        'batchnorm-so-relu-layer' : xlayers.XconfigBasicLayer,
-        'sigmoid-layer' : xlayers.XconfigBasicLayer,
-        'tanh-layer' : xlayers.XconfigBasicLayer,
-        'fixed-affine-layer' : xlayers.XconfigFixedAffineLayer,
-        'idct-layer' : xlayers.XconfigIdctLayer,
-        'affine-layer' : xlayers.XconfigAffineLayer,
-        'lstm-layer' : xlayers.XconfigLstmLayer,
-        'lstmp-layer' : xlayers.XconfigLstmpLayer,
-        'lstmp-batchnorm-layer' : xlayers.XconfigLstmpLayer,
-        'fast-lstm-layer' : xlayers.XconfigFastLstmLayer,
-        'fast-lstm-batchnorm-layer' : xlayers.XconfigFastLstmLayer,
-        'fast-lstmp-layer' : xlayers.XconfigFastLstmpLayer,
-        'fast-lstmp-batchnorm-layer' : xlayers.XconfigFastLstmpLayer,
-        'lstmb-layer' : xlayers.XconfigLstmbLayer,
-        'stats-layer': xlayers.XconfigStatsLayer,
-        'relu-conv-layer': xlayers.XconfigConvLayer,
-        'conv-layer': xlayers.XconfigConvLayer,
-        'conv-relu-layer': xlayers.XconfigConvLayer,
-        'conv-renorm-layer': xlayers.XconfigConvLayer,
-        'relu-conv-renorm-layer': xlayers.XconfigConvLayer,
-        'batchnorm-conv-layer': xlayers.XconfigConvLayer,
-        'conv-relu-renorm-layer': xlayers.XconfigConvLayer,
-        'batchnorm-conv-relu-layer': xlayers.XconfigConvLayer,
-        'relu-batchnorm-conv-layer': xlayers.XconfigConvLayer,
-        'relu-batchnorm-noconv-layer': xlayers.XconfigConvLayer,
-        'relu-noconv-layer': xlayers.XconfigConvLayer,
-        'conv-relu-batchnorm-layer': xlayers.XconfigConvLayer,
-        'conv-relu-batchnorm-so-layer': xlayers.XconfigConvLayer,
-        'conv-relu-batchnorm-dropout-layer': xlayers.XconfigConvLayer,
-        'conv-relu-dropout-layer': xlayers.XconfigConvLayer,
-        'res-block': xlayers.XconfigResBlock,
-        'res2-block': xlayers.XconfigRes2Block,
-        'channel-average-layer': xlayers.ChannelAverageLayer,
-        'attention-renorm-layer': xlayers.XconfigAttentionLayer,
-        'attention-relu-renorm-layer': xlayers.XconfigAttentionLayer,
-        'attention-relu-batchnorm-layer': xlayers.XconfigAttentionLayer,
-        'relu-renorm-attention-layer': xlayers.XconfigAttentionLayer,
-        'gru-layer' : xlayers.XconfigGruLayer,
-        'pgru-layer' : xlayers.XconfigPgruLayer,
-        'opgru-layer' : xlayers.XconfigOpgruLayer,
-        'norm-pgru-layer' : xlayers.XconfigNormPgruLayer,
-        'norm-opgru-layer' : xlayers.XconfigNormOpgruLayer,
-        'renorm-component': xlayers.XconfigRenormComponent,
-        'batchnorm-component': xlayers.XconfigBatchnormComponent,
-        'no-op-component': xlayers.XconfigNoOpComponent,
-        'linear-component': xlayers.XconfigLinearComponent
+    'input': xlayers.XconfigInputLayer,
+    'output': xlayers.XconfigTrivialOutputLayer,
+    'output-layer': xlayers.XconfigOutputLayer,
+    'relu-layer': xlayers.XconfigBasicLayer,
+    'relu-renorm-layer': xlayers.XconfigBasicLayer,
+    'relu-batchnorm-dropout-layer': xlayers.XconfigBasicLayer,
+    'relu-dropout-layer': xlayers.XconfigBasicLayer,
+    'relu-batchnorm-layer': xlayers.XconfigBasicLayer,
+    'relu-batchnorm-so-layer': xlayers.XconfigBasicLayer,
+    'batchnorm-so-relu-layer': xlayers.XconfigBasicLayer,
+    'sigmoid-layer': xlayers.XconfigBasicLayer,
+    'tanh-layer': xlayers.XconfigBasicLayer,
+    'fixed-affine-layer': xlayers.XconfigFixedAffineLayer,
+    'idct-layer': xlayers.XconfigIdctLayer,
+    'affine-layer': xlayers.XconfigAffineLayer,
+    'lstm-layer': xlayers.XconfigLstmLayer,
+    'lstmp-layer': xlayers.XconfigLstmpLayer,
+    'lstmp-batchnorm-layer': xlayers.XconfigLstmpLayer,
+    'fast-lstm-layer': xlayers.XconfigFastLstmLayer,
+    'fast-lstm-batchnorm-layer': xlayers.XconfigFastLstmLayer,
+    'fast-lstmp-layer': xlayers.XconfigFastLstmpLayer,
+    'fast-lstmp-batchnorm-layer': xlayers.XconfigFastLstmpLayer,
+    'lstmb-layer': xlayers.XconfigLstmbLayer,
+    'stats-layer': xlayers.XconfigStatsLayer,
+    'relu-conv-layer': xlayers.XconfigConvLayer,
+    'conv-layer': xlayers.XconfigConvLayer,
+    'conv-relu-layer': xlayers.XconfigConvLayer,
+    'conv-renorm-layer': xlayers.XconfigConvLayer,
+    'relu-conv-renorm-layer': xlayers.XconfigConvLayer,
+    'batchnorm-conv-layer': xlayers.XconfigConvLayer,
+    'conv-relu-renorm-layer': xlayers.XconfigConvLayer,
+    'batchnorm-conv-relu-layer': xlayers.XconfigConvLayer,
+    'relu-batchnorm-conv-layer': xlayers.XconfigConvLayer,
+    'relu-batchnorm-noconv-layer': xlayers.XconfigConvLayer,
+    'relu-noconv-layer': xlayers.XconfigConvLayer,
+    'conv-relu-batchnorm-layer': xlayers.XconfigConvLayer,
+    'conv-relu-batchnorm-so-layer': xlayers.XconfigConvLayer,
+    'conv-relu-batchnorm-dropout-layer': xlayers.XconfigConvLayer,
+    'conv-relu-dropout-layer': xlayers.XconfigConvLayer,
+    'res-block': xlayers.XconfigResBlock,
+    'res2-block': xlayers.XconfigRes2Block,
+    'channel-average-layer': xlayers.ChannelAverageLayer,
+    'attention-renorm-layer': xlayers.XconfigAttentionLayer,
+    'attention-relu-renorm-layer': xlayers.XconfigAttentionLayer,
+    'attention-relu-batchnorm-layer': xlayers.XconfigAttentionLayer,
+    'relu-renorm-attention-layer': xlayers.XconfigAttentionLayer,
+    'gru-layer': xlayers.XconfigGruLayer,
+    'pgru-layer': xlayers.XconfigPgruLayer,
+    'opgru-layer': xlayers.XconfigOpgruLayer,
+    'norm-pgru-layer': xlayers.XconfigNormPgruLayer,
+    'norm-opgru-layer': xlayers.XconfigNormOpgruLayer,
+    'renorm-component': xlayers.XconfigRenormComponent,
+    'batchnorm-component': xlayers.XconfigBatchnormComponent,
+    'no-op-component': xlayers.XconfigNoOpComponent,
+    'linear-component': xlayers.XconfigLinearComponent
 }
+
 
 # Turn a config line and a list of previous layers into
 # either an object representing that line of the config file; or None
 # if the line was empty after removing comments.
 # 'prev_layers' is a list of objects corresponding to preceding layers of the
 # config file.
-def xconfig_line_to_object(config_line, prev_layers = None):
+def xconfig_line_to_object(config_line, prev_layers=None):
     try:
-        x  = xutils.parse_config_line(config_line)
+        x = xutils.parse_config_line(config_line)
         if x is None:
             return None
         (first_token, key_to_value) = x
@@ -132,22 +132,22 @@ def get_model_component_info(model_filename):
     for line in out.split("\n"):
         parts = line.split(" ")
         dim = -1
-        for  field in parts:
+        for field in parts:
             key_value = field.split("=")
             if len(key_value) == 2:
                 key = key_value[0]
                 value = key_value[1]
-                if key == "name":           # name=**
+                if key == "name":  # name=**
                     layer_name = value
-                elif key == "dim":          # for input-node
+                elif key == "dim":  # for input-node
                     dim = int(value)
-                elif key == "output-dim":   # for component-node
+                elif key == "output-dim":  # for component-node
                     dim = int(value)
 
         if layer_name is not None and layer_name not in layer_names:
             layer_names.append(layer_name)
             key_to_value['name'] = layer_name
-            assert(dim != -1)
+            assert (dim != -1)
             key_to_value['dim'] = dim
             all_layers.append(xlayers.XconfigExistingLayer('existing', key_to_value, all_layers))
     if len(all_layers) == 0:

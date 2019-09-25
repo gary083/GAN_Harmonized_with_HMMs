@@ -10,9 +10,10 @@ a new wav.scp file.
 """
 
 import argparse
-import re
 import random
+import re
 import sys
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="""
@@ -31,11 +32,11 @@ def get_args():
                         help="Maximum volume scale to tbe applid.")
     parser.add_argument("--reco2vol", type=str, default=None,
                         help="If supplied, it must be a file of the format "
-                        "<reco-id> <volume-scale>, which specifies the "
-                        "volume scale to be applied for each recording.")
+                             "<reco-id> <volume-scale>, which specifies the "
+                             "volume scale to be applied for each recording.")
     parser.add_argument("--write-reco2vol", type=str, default=None,
                         help="If provided, the volume scale used for each "
-                        "recording will be written to this file")
+                             "recording will be written to this file")
     args = parser.parse_args()
 
     if args.reco2vol == "":
@@ -91,14 +92,14 @@ def run(args):
         # Handle three cases of rxfilenames appropriately;
         # 'input piped command', 'file offset' and 'filename'
         if line.strip()[-1] == '|':
-            print ('{0} sox --vol {1} -t wav - -t wav - |'.format(
+            print('{0} sox --vol {1} -t wav - -t wav - |'.format(
                 line.strip(), vol))
         elif re.search(':[0-9]+$', line.strip()) is not None:
-            print ('{id} wav-copy {wav} - | '
-                   'sox --vol {vol} -t wav - -t wav - |'.format(
-                       id=parts[0], wav=' '.join(parts[1:]), vol=vol))
+            print('{id} wav-copy {wav} - | '
+                  'sox --vol {vol} -t wav - -t wav - |'.format(
+                id=parts[0], wav=' '.join(parts[1:]), vol=vol))
         else:
-            print ('{id} sox --vol {vol} -t wav {wav} -t wav - |'.format(
+            print('{id} sox --vol {vol} -t wav {wav} -t wav - |'.format(
                 id=parts[0], wav=' '.join(parts[1:]), vol=vol))
 
         if args.write_reco2vol is not None:

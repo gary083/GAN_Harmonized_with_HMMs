@@ -41,7 +41,7 @@ def main():
             continue
 
         p = int(parts[2])
-        print ("{0}".format(p))
+        print("{0}".format(p))
 
         raise SystemExit(0)
 

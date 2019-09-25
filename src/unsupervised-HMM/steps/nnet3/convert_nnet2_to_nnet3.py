@@ -7,46 +7,54 @@
 # can be modified in the configuration section below.
 
 from __future__ import print_function
-import argparse, os, tempfile, logging, sys, shutil, fileinput, re
+
+import argparse
+import logging
+import os
+import re
+import shutil
+import sys
+import tempfile
 from collections import defaultdict, namedtuple
+
 import numpy as np
+
 sys.path.insert(0, 'steps/')
-import libs.nnet3.train.common as common_train_lib
 import libs.common as common_lib
 
 # Begin configuration section
 # Components and their corresponding node names
 
 NODE_NAMES = {
-    "<AffineComponent>":"affine",
-    "<AffineComponentPreconditioned>":"affine",
-    "<AffineComponentPreconditionedOnline>":"affine",
-    "<BlockAffineComponent>":"affine",
-    "<BlockAffineComponentPreconditioned>":"affine",
-    "<SigmoidComponent>":"nonlin",
-    "<TanhComponent>":"nonlin",
-    "<PowerComponent>":"nonlin",
-    "<RectifiedLinearComponent>":"nonlin",
-    "<SoftHingeComponent>":"nonlin",
-    "<PnormComponent>":"nonlin",
-    "<NormalizeComponent>":"renorm",
-    "<MaxoutComponent>":"maxout",
-    "<MaxpoolingComponent>":"maxpool",
-    "<ScaleComponent>":"rescale",
-    "<DropoutComponent>":"dropout",
-    "<SoftmaxComponent>":"softmax",
-    "<LogSoftmaxComponent>":"log-softmax",
-    "<FixedScaleComponent>":"fixed-scale",
-    "<FixedAffineComponent>":"fixed-affine",
-    "<FixedLinearComponent>":"fixed-linear",
-    "<FixedBiasComponent>":"fixed-bias",
-    "<PermuteComponent>":"permute",
-    "<AdditiveNoiseComponent>":"noise",
-    "<Convolutional1dComponent>":"conv",
-    "<SumGroupComponent>":"sum-group",
-    "<DctComponent>":"dct",
-    "<SpliceComponent>":"splice",
-    "<SpliceMaxComponent>":"splice"
+    "<AffineComponent>": "affine",
+    "<AffineComponentPreconditioned>": "affine",
+    "<AffineComponentPreconditionedOnline>": "affine",
+    "<BlockAffineComponent>": "affine",
+    "<BlockAffineComponentPreconditioned>": "affine",
+    "<SigmoidComponent>": "nonlin",
+    "<TanhComponent>": "nonlin",
+    "<PowerComponent>": "nonlin",
+    "<RectifiedLinearComponent>": "nonlin",
+    "<SoftHingeComponent>": "nonlin",
+    "<PnormComponent>": "nonlin",
+    "<NormalizeComponent>": "renorm",
+    "<MaxoutComponent>": "maxout",
+    "<MaxpoolingComponent>": "maxpool",
+    "<ScaleComponent>": "rescale",
+    "<DropoutComponent>": "dropout",
+    "<SoftmaxComponent>": "softmax",
+    "<LogSoftmaxComponent>": "log-softmax",
+    "<FixedScaleComponent>": "fixed-scale",
+    "<FixedAffineComponent>": "fixed-affine",
+    "<FixedLinearComponent>": "fixed-linear",
+    "<FixedBiasComponent>": "fixed-bias",
+    "<PermuteComponent>": "permute",
+    "<AdditiveNoiseComponent>": "noise",
+    "<Convolutional1dComponent>": "conv",
+    "<SumGroupComponent>": "sum-group",
+    "<DctComponent>": "dct",
+    "<SpliceComponent>": "splice",
+    "<SpliceMaxComponent>": "splice"
 }
 
 SPLICE_COMPONENTS = [c for c in NODE_NAMES if "Splice" in c]
@@ -64,6 +72,7 @@ formatter = logging.Formatter("%(asctime)s [%(filename)s:%(lineno)s - "
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 def GetArgs():
     parser = argparse.ArgumentParser(
         description="Converts nnet2 into nnet3 models.",
@@ -75,8 +84,8 @@ def GetArgs():
                         help="Will not remove the temporary directory.")
     parser.add_argument("--model", type=str, default='final.mdl',
                         help="Choose a specific model to convert.")
-    parser.add_argument("--binary", type=str, default="true", 
-                        choices=["true","false"], 
+    parser.add_argument("--binary", type=str, default="true",
+                        choices=["true", "false"],
                         help="Whether to write the model in binary or not.")
     parser.add_argument("nnet2_dir", metavar="src-nnet2-dir", type=str,
                         help="")
@@ -94,9 +103,10 @@ def GetArgs():
 
     return args
 
+
 class Nnet3Model(object):
     """Holds configuration for an Nnet3 model."""
-    
+
     def __init__(self):
         self.input_dim = -1
         self.output_dim = -1
@@ -129,7 +139,7 @@ class Nnet3Model(object):
 
         # format pairs: {'<InputDim>':43} -> {'input-dim':43}
         pairs = ["{0}={1}".format(token_to_string(key), pairs[key]) for key in pairs]
-        
+
         # keep track of layer type number (e.g. affine3)
         node_name = NODE_NAMES[component]
         self.counts[node_name] += 1
@@ -154,8 +164,8 @@ class Nnet3Model(object):
                 config_string = ' '.join(component.pairs)
 
                 f.write("component name={name} type={comp_type} {config_string}"
-                        "\n".format(name=component.ident, 
-                                    comp_type=component.component, 
+                        "\n".format(name=component.ident,
+                                    comp_type=component.component,
                                     config_string=config_string))
 
             f.write("\n# Component nodes\n")
@@ -164,11 +174,11 @@ class Nnet3Model(object):
             for component in self.components:
                 if component.ident == "splice":
                     # Create splice string for the next node
-                    previous_component = make_splice_string(previous_component, 
-                                                   component.pairs["<Context>"])
+                    previous_component = make_splice_string(previous_component,
+                                                            component.pairs["<Context>"])
                     continue
                 f.write("component-node name={name} component={name} "
-                        "input={inp}\n".format(name=component.ident, 
+                        "input={inp}\n".format(name=component.ident,
                                                inp=previous_component))
                 previous_component = component.ident
             logger.warning("Assuming linear objective.")
@@ -181,18 +191,19 @@ class Nnet3Model(object):
 
         # write raw model
         common_lib.execute_command("nnet3-init --binary=true {0} {1}"
-            .format(self.config, os.path.join(tmpdir, "nnet3.raw")))
+                                   .format(self.config, os.path.join(tmpdir, "nnet3.raw")))
 
         # add transition model
         common_lib.execute_command("nnet3-am-init --binary=true {0} {1} {2}"
-            .format(self.transition_model, os.path.join(tmpdir, "nnet3.raw"),
-                    os.path.join(tmpdir, "nnet3_no_prior.mdl")))
+                                   .format(self.transition_model, os.path.join(tmpdir, "nnet3.raw"),
+                                           os.path.join(tmpdir, "nnet3_no_prior.mdl")))
 
         # add priors
         common_lib.execute_command("nnet3-am-adjust-priors "
-                                     "--binary={0} {1} {2} {3}"
-            .format(binary, os.path.join(tmpdir, "nnet3_no_prior.mdl"), 
-                    self.priors, model))
+                                   "--binary={0} {1} {2} {3}"
+                                   .format(binary, os.path.join(tmpdir, "nnet3_no_prior.mdl"),
+                                           self.priors, model))
+
 
 def parse_nnet2_to_nnet3(line_buffer):
     """Reads an Nnet2 model into an Nnet3 object.
@@ -206,7 +217,7 @@ def parse_nnet2_to_nnet3(line_buffer):
 
     # <TransitionModel> ...
     model.transition_model = parse_transition_model(line_buffer)
-    
+
     # <Nnet> <NumComponents> ...
     line, model.num_components = parse_nnet2_header(line_buffer)
 
@@ -219,12 +230,13 @@ def parse_nnet2_to_nnet3(line_buffer):
         line = next(line_buffer)
 
     model.priors = parse_priors(line, line_buffer)
-    
+
     if model.components_read != model.num_components:
         logger.error("Did not read all components succesfully: {0}/{1}"
                      .format(model.components_read, model.num_components))
 
     return model
+
 
 def parse_transition_model(line_buffer):
     """Writes transition model to text file.
@@ -238,7 +250,7 @@ def parse_transition_model(line_buffer):
 
     with open(transition_model, 'w') as fc:
         fc.write(line)
-        
+
         while True:
             line = next(line_buffer)
             fc.write(line)
@@ -246,6 +258,7 @@ def parse_transition_model(line_buffer):
                 break
 
         return transition_model
+
 
 def parse_nnet2_header(line_buffer):
     """Returns number of components in Nnet2 header."""
@@ -257,8 +270,9 @@ def parse_nnet2_header(line_buffer):
     line = line.partition(str(num_components))[2]
     line = consume_token("<Components>", line)
 
-    return line, num_components 
-                
+    return line, num_components
+
+
 def parse_component(line, line_buffer):
     component = line.split()[0]
     pairs = {}
@@ -282,12 +296,14 @@ def parse_component(line, line_buffer):
 
     return component, pairs
 
+
 def parse_standard_component(component, line, line_buffer):
     # Ignores stats such as ValueSum and DerivSum
     line = consume_token(component, line)
     pairs = re.findall("(<\w+>) ([\w.]+)", line)
 
     return dict(pairs)
+
 
 def parse_fixed_scale_component(component, line, line_buffer):
     line = consume_token(component, line)
@@ -301,7 +317,8 @@ def parse_fixed_scale_component(component, line, line_buffer):
         np.savetxt(f, scales, newline='')
         f.write(" ]")
 
-    return {"<Scales>" : filename}
+    return {"<Scales>": filename}
+
 
 def parse_sum_group_component(component, line, line_buffer):
     line = consume_token(component, line)
@@ -309,7 +326,8 @@ def parse_sum_group_component(component, line, line_buffer):
 
     sizes = line.strip().strip("[]").strip().replace(' ', ',')
 
-    return {"<Sizes>" : sizes}
+    return {"<Sizes>": sizes}
+
 
 def parse_fixed_bias_component(component, line, line_buffer):
     line = consume_token(component, line)
@@ -323,7 +341,8 @@ def parse_fixed_bias_component(component, line, line_buffer):
         np.savetxt(f, scales, newline='')
         f.write(" ]")
 
-    return {"<Bias>" : filename}
+    return {"<Bias>": filename}
+
 
 def parse_splice_component(component, line, line_buffer):
     if component == "<SpliceMaxComponent>":
@@ -335,7 +354,8 @@ def parse_splice_component(component, line, line_buffer):
     line = consume_token("<Context>", line)
     context = line.strip()[1:-1].split()
 
-    return {"<InputDim>" : input_dim, "<Context>" : context}
+    return {"<InputDim>": input_dim, "<Context>": context}
+
 
 def parse_end_of_component(component, line, line_buffer):
     # Keeps reading until it hits the end tag for component
@@ -345,6 +365,7 @@ def parse_end_of_component(component, line, line_buffer):
         line = next(line_buffer)
 
     return
+
 
 def parse_affine_component(component, line, line_buffer):
     assert ("<LinearParams>" in line)
@@ -368,6 +389,7 @@ def parse_affine_component(component, line, line_buffer):
 
     return pairs
 
+
 def parse_weights(line_buffer):
     weights = []
 
@@ -384,15 +406,18 @@ def parse_weights(line_buffer):
 
     return np.array(weights)
 
+
 def parse_bias(line):
     if "<BiasParams>" in line:
         line = consume_token("<BiasParams>", line)
 
     return np.array([parse_vector(line)])
 
+
 def parse_vector(line):
     vector = line.strip().strip("[]")
     return np.array([float(x) for x in vector.split()], dtype="float32")
+
 
 def parse_priors(line, line_buffer):
     vector = parse_vector(line.partition('[')[2])
@@ -405,6 +430,7 @@ def parse_priors(line, line_buffer):
 
     return priors
 
+
 def token_to_string(token):
     """Converts tokens to lowercase, hyphen-bounded strings.
 
@@ -414,13 +440,15 @@ def token_to_string(token):
     string = re.sub(r"((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))", r'-\1', string).lower()
     return string
 
+
 def consume_token(token, line):
     """Returns line without token"""
     if token != line.split(None, 1)[0]:
         logger.error("Unexpected token, expected '{0}', got '{1}'."
-              .format(token, line.split(None, 1)[0]))
+                     .format(token, line.split(None, 1)[0]))
 
     return line.partition(token)[2]
+
 
 def make_splice_string(nodename, context):
     """Generates splice string from a list of context.
@@ -433,20 +461,22 @@ def make_splice_string(nodename, context):
     string = "Append(" + ", ".join(string) + ")"
     return string
 
+
 tmpdir = ""
+
 
 def Main():
     args = GetArgs()
     logger.info("Converting nnet2 model {0} to nnet3 model {1}"
-                .format(os.path.join(args.nnet2_dir, args.model), 
+                .format(os.path.join(args.nnet2_dir, args.model),
                         os.path.join(args.nnet3_dir, args.model)))
     global tmpdir
-    tmpdir = tempfile.mkdtemp(dir=args.tmpdir) 
+    tmpdir = tempfile.mkdtemp(dir=args.tmpdir)
 
     # Convert nnet2 model to text and remove preconditioning
     common_lib.execute_command("nnet-am-copy "
-            "--remove-preconditioning=true --binary=false {0}/{1} {2}/{1}"
-            .format(args.nnet2_dir, args.model, tmpdir))
+                               "--remove-preconditioning=true --binary=false {0}/{1} {2}/{1}"
+                               .format(args.nnet2_dir, args.model, tmpdir))
 
     # Parse nnet2 and return nnet3 object
     with open(os.path.join(tmpdir, args.model)) as f:
@@ -454,16 +484,17 @@ def Main():
 
     # Write model
     nnet3.write_config(os.path.join(tmpdir, "config"))
-    nnet3.write_model(os.path.join(args.nnet3_dir, args.model), 
+    nnet3.write_model(os.path.join(args.nnet3_dir, args.model),
                       binary=args.binary)
-        
+
     if not args.skip_cleanup:
         shutil.rmtree(tmpdir)
     else:
         logger.info("Not removing temporary directory {0}".format(tmpdir))
-     
-    logger.info("Wrote nnet3 model to {0}".format(os.path.join(args.nnet3_dir, 
-                                                  args.model)))
+
+    logger.info("Wrote nnet3 model to {0}".format(os.path.join(args.nnet3_dir,
+                                                               args.model)))
+
 
 if __name__ == "__main__":
     Main()

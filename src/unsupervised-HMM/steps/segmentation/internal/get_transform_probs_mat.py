@@ -5,9 +5,11 @@
 
 import argparse
 import sys
+
 sys.path.insert(0, 'steps')
 
 import libs.common as common_lib
+
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -18,25 +20,25 @@ def get_args():
     parser.add_argument("--priors", type=str, default=None,
                         action=common_lib.NullstrToNoneAction,
                         help="Priors vector used to remove the priors from "
-                        "the neural network output posteriors to "
-                        "convert them to likelihoods")
+                             "the neural network output posteriors to "
+                             "convert them to likelihoods")
 
     parser.add_argument("--sil-in-speech-weight", type=float,
                         default=0.0,
                         help="The fraction of silence probability "
-                        "to add to speech")
+                             "to add to speech")
     parser.add_argument("--speech-in-sil-weight", type=float,
                         default=0.0,
                         help="The fraction of speech probability "
-                        "to add to silence")
+                             "to add to silence")
     parser.add_argument("--garbage-in-speech-weight", type=float,
                         default=0.0,
                         help="The fraction of garbage probability "
-                        "to add to speech")
+                             "to add to speech")
     parser.add_argument("--garbage-in-sil-weight", type=float,
                         default=0.0,
                         help="The fraction of garbage probability "
-                        "to add to silence")
+                             "to add to silence")
     parser.add_argument("--sil-scale", type=float,
                         default=1.0, help="""Scale on the silence probability
                         (make this more than one to encourage

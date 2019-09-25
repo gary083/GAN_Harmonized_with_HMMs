@@ -6,7 +6,9 @@
 """
 
 from __future__ import print_function
+
 import re
+
 from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
 
 
@@ -34,6 +36,7 @@ class XconfigStatsLayer(XconfigLayerBase):
                      dimension computed from input]
         config=''   [Required. Defines what stats must be computed.]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         assert first_token in ['stats-layer']
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
@@ -47,7 +50,7 @@ class XconfigStatsLayer(XconfigLayerBase):
         config_string = self.config['config']
         if config_string == '':
             raise RuntimeError("config has to be non-empty",
-                                self.str())
+                               self.str())
         m = re.search("(mean|mean\+stddev|mean\+count|mean\+stddev\+count)"
                       "\((-?\d+):(-?\d+):(-?\d+):(-?\d+)\)",
                       config_string)
@@ -65,11 +68,11 @@ class XconfigStatsLayer(XconfigLayerBase):
         self._right_context = int(m.group(5))
 
         if self._output_stddev:
-          output_dim = 2 * self.descriptors['input']['dim']
+            output_dim = 2 * self.descriptors['input']['dim']
         else:
-          output_dim = self.descriptors['input']['dim']
+            output_dim = self.descriptors['input']['dim']
         if self._output_log_counts:
-          output_dim = output_dim + 1
+            output_dim = output_dim + 1
 
         if self.config['dim'] > 0 and self.config['dim'] != output_dim:
             raise RuntimeError(

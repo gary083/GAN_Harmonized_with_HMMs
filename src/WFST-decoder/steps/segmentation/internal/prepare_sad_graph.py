@@ -10,16 +10,14 @@ can be file or "-" for stdout.
 """
 
 from __future__ import print_function
+
 import argparse
 import logging
 import math
-import os
 import sys
-import traceback
 
 sys.path.insert(0, 'steps')
 import libs.common as common_lib
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -62,7 +60,7 @@ def get_args():
                         help="Probability of silence at the edges.")
     parser.add_argument("--transition-probability", type=float, default=0.1,
                         help="Transition probability for silence to speech "
-                        "or vice-versa")
+                             "or vice-versa")
 
     parser.add_argument("output_graph", type=str,
                         help="Output graph")
@@ -80,8 +78,8 @@ def get_args():
 
 def print_states(args, file_handle):
     # Initial transition to silence
-    print ("0 1 silence silence {0}".format(-math.log(args.edge_silence_probability)),
-           file=file_handle)
+    print("0 1 silence silence {0}".format(-math.log(args.edge_silence_probability)),
+          file=file_handle)
     silence_start_state = 1
 
     # Silence min duration transitions
@@ -89,66 +87,66 @@ def print_states(args, file_handle):
     # (1 + min_states_silence - 2) -> (1 + min_states_silence - 1)  ...
     for state in range(silence_start_state,
                        silence_start_state + args.min_states_silence - 1):
-        print ("{state} {next_state} silence silence {cost}".format(
-                    state=state, next_state=state + 1, cost=0.0),
-               file=file_handle)
+        print("{state} {next_state} silence silence {cost}".format(
+            state=state, next_state=state + 1, cost=0.0),
+            file=file_handle)
     silence_last_state = silence_start_state + args.min_states_silence - 1
 
     # Silence self-loop
-    print ("{state} {state} silence silence {cost}".format(
-                state=silence_last_state, cost=0.0),
-           file=file_handle)
+    print("{state} {state} silence silence {cost}".format(
+        state=silence_last_state, cost=0.0),
+        file=file_handle)
 
     speech_start_state = silence_last_state + 1
     # Initial transition to speech
-    print ("0 {state} speech speech {cost}".format(
-                state=speech_start_state,
-                cost=-math.log(1.0 - args.edge_silence_probability)),
-           file=file_handle)
+    print("0 {state} speech speech {cost}".format(
+        state=speech_start_state,
+        cost=-math.log(1.0 - args.edge_silence_probability)),
+        file=file_handle)
 
     # Silence to speech transition
-    print ("{sil_state} {speech_state} speech speech {cost}".format(
-                sil_state=silence_last_state,
-                speech_state=speech_start_state,
-                cost=-math.log(args.transition_probability)),
-           file=file_handle)
+    print("{sil_state} {speech_state} speech speech {cost}".format(
+        sil_state=silence_last_state,
+        speech_state=speech_start_state,
+        cost=-math.log(args.transition_probability)),
+        file=file_handle)
 
     # Speech min duration
     for state in range(speech_start_state,
                        speech_start_state + args.min_states_speech - 1):
-        print ("{state} {next_state} speech speech {cost}".format(
-                    state=state, next_state=state + 1, cost=0.0),
-               file=file_handle)
+        print("{state} {next_state} speech speech {cost}".format(
+            state=state, next_state=state + 1, cost=0.0),
+            file=file_handle)
 
     # Speech max duration
     for state in range(speech_start_state + args.min_states_speech - 1,
                        speech_start_state + args.max_states_speech - 1):
-        print ("{state} {next_state} speech speech {cost}".format(
-                    state=state, next_state=state + 1, cost=0.0),
-               file=file_handle)
+        print("{state} {next_state} speech speech {cost}".format(
+            state=state, next_state=state + 1, cost=0.0),
+            file=file_handle)
 
-        print ("{state} {sil_state} silence silence {cost}".format(
-                    state=state, sil_state=silence_start_state,
-                    cost=-math.log(args.transition_probability)),
-               file=file_handle)
+        print("{state} {sil_state} silence silence {cost}".format(
+            state=state, sil_state=silence_start_state,
+            cost=-math.log(args.transition_probability)),
+            file=file_handle)
     speech_last_state = speech_start_state + args.max_states_speech - 1
 
     # Transition to silence after max duration of speech
-    print ("{state} {sil_state} silence silence {cost}".format(
-                state=speech_last_state, sil_state=silence_start_state,
-                cost=0.0),
-           file=file_handle)
+    print("{state} {sil_state} silence silence {cost}".format(
+        state=speech_last_state, sil_state=silence_start_state,
+        cost=0.0),
+        file=file_handle)
 
     for state in range(1, speech_start_state):
-        print ("{state} {cost}".format(
-                    state=state, cost=-math.log(args.edge_silence_probability)),
-               file=file_handle)
+        print("{state} {cost}".format(
+            state=state, cost=-math.log(args.edge_silence_probability)),
+            file=file_handle)
 
     for state in range(speech_start_state, speech_last_state + 1):
-        print ("{state} {cost}".format(
-                    state=state,
-                    cost=-math.log(1.0 - args.edge_silence_probability)),
-               file=file_handle)
+        print("{state} {cost}".format(
+            state=state,
+            cost=-math.log(1.0 - args.edge_silence_probability)),
+            file=file_handle)
 
 
 def main():

@@ -5,10 +5,9 @@
 # see get_args() below for usage message.
 
 import argparse
-import os
-import sys
 import math
 import re
+import sys
 
 # The use of latin-1 encoding does not preclude reading utf-8.  latin-1
 # encoding means "treat words as sequences of bytes", and it is compatible
@@ -96,7 +95,7 @@ def read_silprobs(filename):
                 elif label == "</s>_n":
                     nonsilendcorrection = float(a[1])
                 elif label == "overall":
-                    siloverallprob = float(a[1]) # this is not in use, still keep it?
+                    siloverallprob = float(a[1])  # this is not in use, still keep it?
                 else:
                     raise RuntimeError()
             except:
@@ -105,10 +104,10 @@ def read_silprobs(filename):
                       file=sys.stderr)
                 sys.exit(1)
     if (silbeginprob <= 0.0 or silbeginprob > 1.0 or
-        silendcorrection <= 0.0 or nonsilendcorrection <= 0.0 or
-        siloverallprob <= 0.0 or siloverallprob > 1.0):
+            silendcorrection <= 0.0 or nonsilendcorrection <= 0.0 or
+            siloverallprob <= 0.0 or siloverallprob > 1.0):
         print("{0}: error: prob is not correct in silprobs file {1}."
-            .format(sys.argv[0], filename), file=sys.stderr)
+              .format(sys.argv[0], filename), file=sys.stderr)
         sys.exit(1)
     return (silbeginprob, silendcorrection, nonsilendcorrection, siloverallprob)
 
@@ -263,8 +262,9 @@ def write_nonterminal_arcs(start_state, sil_state, non_sil_state,
         state=final_state, final_cost=0.0))
     return next_state
 
+
 def write_fst(lexicon, silprobs, sil_phone, sil_disambig,
-              nonterminals = None, left_context_phones = None):
+              nonterminals=None, left_context_phones=None):
     """Writes the text format of L.fst (or L_disambig.fst)  to the standard output.
      'lexicon' is a list of 5-tuples
      (word, pronprob, wordsilprob, silwordcorrection, nonsilwordcorrection, pron)
@@ -286,8 +286,8 @@ def write_fst(lexicon, silprobs, sil_phone, sil_disambig,
     non_sil_end_correction_cost = -math.log(nonsilendcorrection);
     start_state = 0
     non_sil_state = 1  # words enter and leave from here
-    sil_state = 2   # words terminate here when followed by silence; this state
-                    # has a silence transition to loop_state.
+    sil_state = 2  # words terminate here when followed by silence; this state
+    # has a silence transition to loop_state.
     next_state = 3  # the next un-allocated state, will be incremented as we go.
 
     # Arcs from the start state to the silence and nonsilence loop states
@@ -336,7 +336,7 @@ def write_fst(lexicon, silprobs, sil_phone, sil_disambig,
         # nonsilence state.  the silence-disambig symbol, if used,q
         # goes on the nonsilence arc; this saves us having to insert an epsilon.
         print("{src}\t{dest}\t{phone}\t{word}\t{cost}".format(
-            src=cur_state,  dest=non_sil_state,
+            src=cur_state, dest=non_sil_state,
             phone=sil_disambig, word='<eps>',
             cost=word_to_non_sil_cost))
         print("{src}\t{dest}\t{phone}\t{word}\t{cost}".format(
@@ -352,6 +352,7 @@ def write_fst(lexicon, silprobs, sil_phone, sil_disambig,
 
     print('{src}\t{cost}'.format(src=sil_state, cost=sil_end_correction_cost))
     print('{src}\t{cost}'.format(src=non_sil_state, cost=non_sil_end_correction_cost))
+
 
 def read_nonterminals(filename):
     """Reads the user-defined nonterminal symbols in 'filename', checks that
@@ -369,6 +370,7 @@ def read_nonterminals(filename):
         raise RuntimeError("Duplicate nonterminal symbols are present in file {0}".format(filename))
     return ans
 
+
 def read_left_context_phones(filename):
     """Reads, checks, and returns a list of left-context phones, in text form, one
        per line.  Returns a list of strings, e.g. ['a', 'ah', ..., '#nonterm_bos' ]"""
@@ -377,7 +379,7 @@ def read_left_context_phones(filename):
         raise RuntimeError("The file {0} contains no left-context phones.".format(filename))
     for s in ans:
         if len(s.split()) != 1:
-            raise RuntimeError("The file {0} contains an invalid line '{1}'".format(filename, s)   )
+            raise RuntimeError("The file {0} contains an invalid line '{1}'".format(filename, s))
 
     if len(set(ans)) != len(ans):
         raise RuntimeError("Duplicate nonterminal symbols are present in file {0}".format(filename))
@@ -388,7 +390,6 @@ def main():
     args = get_args()
     silprobs = read_silprobs(args.silprobs)
     lexicon = read_lexiconp(args.lexiconp)
-
 
     if args.nonterminals is None:
         nonterminals, left_context_phones = None, None
@@ -405,4 +406,4 @@ def main():
 
 
 if __name__ == '__main__':
-      main()
+    main()

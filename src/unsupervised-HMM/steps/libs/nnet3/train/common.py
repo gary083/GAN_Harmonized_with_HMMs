@@ -1,5 +1,3 @@
-
-
 # Copyright 2016    Vijayaditya Peddinti.
 #           2016    Vimal Manohar
 # Apache 2.0
@@ -12,8 +10,8 @@ from __future__ import division
 import argparse
 import glob
 import logging
-import os
 import math
+import os
 import re
 import shutil
 
@@ -40,6 +38,7 @@ class RunOpts(object):
         self.prior_gpu_opt = None
         self.prior_queue_opt = None
         self.parallel_train_opts = None
+
 
 def get_outputs_list(model_file, get_raw_nnet_from_am=True):
     """ Generates list of output-node-names used in nnet3 model configuration.
@@ -134,21 +133,20 @@ def get_successful_models(num_models, log_file_pattern,
     if len(accepted_models) != num_models:
         logger.warn("Only {0}/{1} of the models have been accepted "
                     "for averaging, based on log files {2}.".format(
-                        len(accepted_models),
-                        num_models, log_file_pattern))
+            len(accepted_models),
+            num_models, log_file_pattern))
 
     return [accepted_models, max_index + 1]
 
 
 def get_average_nnet_model(dir, iter, nnets_list, run_opts,
                            get_raw_nnet_from_am=True):
-
     next_iter = iter + 1
     if get_raw_nnet_from_am:
         out_model = ("""- \| nnet3-am-copy --set-raw-nnet=-  \
                         {dir}/{iter}.mdl {dir}/{next_iter}.mdl""".format(
-                            dir=dir, iter=iter,
-                            next_iter=next_iter))
+            dir=dir, iter=iter,
+            next_iter=next_iter))
     else:
         out_model = "{dir}/{next_iter}.raw".format(
             dir=dir, next_iter=next_iter)
@@ -165,7 +163,6 @@ def get_average_nnet_model(dir, iter, nnets_list, run_opts,
 
 def get_best_nnet_model(dir, iter, best_model_index, run_opts,
                         get_raw_nnet_from_am=True):
-
     best_model = "{dir}/{next_iter}.{best_model_index}.raw".format(
         dir=dir,
         next_iter=iter + 1,
@@ -174,7 +171,7 @@ def get_best_nnet_model(dir, iter, best_model_index, run_opts,
     if get_raw_nnet_from_am:
         out_model = ("""- \| nnet3-am-copy --set-raw-nnet=- \
                         {dir}/{iter}.mdl {dir}/{next_iter}.mdl""".format(
-                            dir=dir, iter=iter, next_iter=iter + 1))
+            dir=dir, iter=iter, next_iter=iter + 1))
     else:
         out_model = "{dir}/{next_iter}.raw".format(dir=dir,
                                                    next_iter=iter + 1)
@@ -292,7 +289,7 @@ def halve_range_str(range_str):
     halved_ranges = []
     for r in ranges:
         # a range may be either e.g. '64', or '128:256'
-        c = [str(max(1, int(x)//2)) for x in r.split(":")]
+        c = [str(max(1, int(x) // 2)) for x in r.split(":")]
         halved_ranges.append(":".join(c))
     return ','.join(halved_ranges)
 
@@ -381,9 +378,9 @@ def get_input_model_info(input_model):
             parts = line.split(":")
             if len(parts) != 2:
                 continue
-            if parts[0].strip() ==  'left-context':
+            if parts[0].strip() == 'left-context':
                 variables['model_left_context'] = int(parts[1].strip())
-            elif parts[0].strip() ==  'right-context':
+            elif parts[0].strip() == 'right-context':
                 variables['model_right_context'] = int(parts[1].strip())
 
     except ValueError:
@@ -396,12 +393,12 @@ def verify_egs_dir(egs_dir, feat_dim, ivector_dim, ivector_extractor_id,
                    left_context_initial=-1, right_context_final=-1):
     try:
         egs_feat_dim = int(open('{0}/info/feat_dim'.format(
-                                    egs_dir)).readline())
+            egs_dir)).readline())
 
         egs_ivector_id = None
         try:
             egs_ivector_id = open('{0}/info/final.ie.id'.format(
-                                        egs_dir)).readline().strip()
+                egs_dir)).readline().strip()
             if (egs_ivector_id == ""):
                 egs_ivector_id = None;
         except:
@@ -416,17 +413,17 @@ def verify_egs_dir(egs_dir, feat_dim, ivector_dim, ivector_extractor_id,
         except:
             egs_ivector_dim = 0
         egs_left_context = int(open('{0}/info/left_context'.format(
-                                    egs_dir)).readline())
+            egs_dir)).readline())
         egs_right_context = int(open('{0}/info/right_context'.format(
-                                    egs_dir)).readline())
+            egs_dir)).readline())
         try:
             egs_left_context_initial = int(open('{0}/info/left_context_initial'.format(
-                        egs_dir)).readline())
+                egs_dir)).readline())
         except:  # older scripts didn't write this, treat it as -1 in that case.
             egs_left_context_initial = -1
         try:
             egs_right_context_final = int(open('{0}/info/right_context_final'.format(
-                        egs_dir)).readline())
+                egs_dir)).readline())
         except:  # older scripts didn't write this, treat it as -1 in that case.
             egs_right_context_final = -1
 
@@ -438,27 +435,27 @@ def verify_egs_dir(egs_dir, feat_dim, ivector_dim, ivector_extractor_id,
                             "egs directory")
 
         if (((egs_ivector_id is None) and (ivector_extractor_id is not None)) or
-            ((egs_ivector_id is not None) and (ivector_extractor_id is None))):
+                ((egs_ivector_id is not None) and (ivector_extractor_id is None))):
             logger.warning("The ivector ids are used inconsistently. It's your "
-                          "responsibility to make sure the ivector extractor "
-                          "has been used consistently")
+                           "responsibility to make sure the ivector extractor "
+                           "has been used consistently")
             logger.warning("ivector id for egs: {0} in dir {1}".format(egs_ivector_id, egs_dir))
             logger.warning("ivector id for extractor: {0}".format(ivector_extractor_id))
         elif ((egs_ivector_dim > 0) and (egs_ivector_id is None) and (ivector_extractor_id is None)):
             logger.warning("The ivector ids are not used. It's your "
-                          "responsibility to make sure the ivector extractor "
-                          "has been used consistently")
+                           "responsibility to make sure the ivector extractor "
+                           "has been used consistently")
         elif ivector_extractor_id != egs_ivector_id:
             raise Exception("The egs were generated using a different ivector "
                             "extractor. id1 = {0}, id2={1}".format(
-                                ivector_extractor_id, egs_ivector_id));
+                ivector_extractor_id, egs_ivector_id));
 
         if (egs_left_context < left_context or
-            egs_right_context < right_context):
+                egs_right_context < right_context):
             raise Exception('The egs have insufficient (l,r) context ({0},{1}) '
                             'versus expected ({2},{3})'.format(
-                                egs_left_context, egs_right_context,
-                                left_context, right_context))
+                egs_left_context, egs_right_context,
+                left_context, right_context))
 
         # the condition on the initial/final context is an equality condition,
         # not an inequality condition, as there is no mechanism to 'correct' the
@@ -469,20 +466,20 @@ def verify_egs_dir(egs_dir, feat_dim, ivector_dim, ivector_extractor_id,
         # options to make things matched up.  [note: the model l/r context gets
         # added in, so you have to correct for changes in that.]
         if (egs_left_context_initial != left_context_initial or
-            egs_right_context_final != right_context_final):
+                egs_right_context_final != right_context_final):
             raise Exception('The egs have incorrect initial/final (l,r) context '
                             '({0},{1}) versus expected ({2},{3}).  See code from '
                             'where this exception was raised for more info'.format(
-                                egs_left_context_initial, egs_right_context_final,
-                                left_context_initial, right_context_final))
+                egs_left_context_initial, egs_right_context_final,
+                left_context_initial, right_context_final))
 
         frames_per_eg_str = open('{0}/info/frames_per_eg'.format(
-                             egs_dir)).readline().rstrip()
+            egs_dir)).readline().rstrip()
         if not validate_chunk_width(frames_per_eg_str):
             raise Exception("Invalid frames_per_eg in directory {0}/info".format(
-                    egs_dir))
+                egs_dir))
         num_archives = int(open('{0}/info/num_archives'.format(
-                                    egs_dir)).readline())
+            egs_dir)).readline())
 
         return [egs_left_context, egs_right_context,
                 frames_per_eg_str, num_archives]
@@ -494,7 +491,6 @@ def verify_egs_dir(egs_dir, feat_dim, ivector_dim, ivector_extractor_id,
 
 def compute_presoftmax_prior_scale(dir, alidir, num_jobs, run_opts,
                                    presoftmax_prior_scale_power=-0.25):
-
     # getting the raw pdf count
     common_lib.execute_command(
         """{command} JOB=1:{num_jobs} {dir}/log/acc_pdf.JOB.log \
@@ -522,7 +518,7 @@ def compute_presoftmax_prior_scale(dir, alidir, num_jobs, run_opts,
     common_lib.write_kaldi_matrix(output_file, [scaled_counts])
     common_lib.force_symlink("../presoftmax_prior_scale.vec",
                              "{0}/configs/presoftmax_prior_scale.vec".format(
-                                dir))
+                                 dir))
 
 
 def smooth_presoftmax_prior_scale_vector(pdf_counts,
@@ -543,24 +539,24 @@ def prepare_initial_network(dir, run_opts, srand=-3, input_model=None):
     if input_model is not None:
         shutil.copy(input_model, "{0}/0.raw".format(dir))
         return
-    if os.path.exists(dir+"/configs/init.config"):
+    if os.path.exists(dir + "/configs/init.config"):
         common_lib.execute_command(
             """{command} {dir}/log/add_first_layer.log \
                     nnet3-init --srand={srand} {dir}/init.raw \
                     {dir}/configs/final.config {dir}/0.raw""".format(
-                        command=run_opts.command, srand=srand,
-                        dir=dir))
+                command=run_opts.command, srand=srand,
+                dir=dir))
     else:
         common_lib.execute_command(
             """{command} {dir}/log/init_model.log \
            nnet3-init --srand={srand} {dir}/configs/final.config {dir}/0.raw""".format(
-                        command=run_opts.command, srand=srand,
-                        dir=dir))
+                command=run_opts.command, srand=srand,
+                dir=dir))
 
 
 def get_model_combine_iters(num_iters, num_epochs,
-                      num_archives, max_models_combine,
-                      num_jobs_final):
+                            num_archives, max_models_combine,
+                            num_jobs_final):
     """ Figures out the list of iterations for which we'll use those models
         in the final model-averaging phase.  (note: it's a weighted average
         where the weights are worked out from a subset of training data.)"""
@@ -582,8 +578,8 @@ def get_model_combine_iters(num_iters, num_epochs,
     # But if this value is > max_models_combine, then the models
     # are subsampled to get these many models to combine.
 
-    num_iters_combine_initial = min(int(approx_iters_per_epoch_final/2) + 1,
-                                    int(num_iters/2))
+    num_iters_combine_initial = min(int(approx_iters_per_epoch_final / 2) + 1,
+                                    int(num_iters / 2))
 
     if num_iters_combine_initial > max_models_combine:
         subsample_model_factor = int(
@@ -595,7 +591,7 @@ def get_model_combine_iters(num_iters, num_epochs,
         models_to_combine.add(num_iters)
     else:
         subsample_model_factor = 1
-        num_iters_combine = min(max_models_combine, num_iters//2)
+        num_iters_combine = min(max_models_combine, num_iters // 2)
         models_to_combine = set(range(num_iters - num_iters_combine + 1,
                                       num_iters + 1))
 
@@ -619,7 +615,6 @@ def get_learning_rate(iter, num_jobs, num_iters, num_archives_processed,
 
 def should_do_shrinkage(iter, model_file, shrink_saturation_threshold,
                         get_raw_nnet_from_am=True):
-
     if iter == 0:
         return True
 
@@ -646,7 +641,7 @@ def should_do_shrinkage(iter, model_file, shrink_saturation_threshold,
 
 def remove_nnet_egs(egs_dir):
     common_lib.execute_command("steps/nnet2/remove_egs.sh {egs_dir}".format(
-            egs_dir=egs_dir))
+        egs_dir=egs_dir))
 
 
 def clean_nnet_dir(nnet_dir, num_iters, egs_dir,
@@ -715,7 +710,7 @@ class CommonParser(object):
                                  dest='cmvn_opts', default=None,
                                  action=common_lib.NullstrToNoneAction,
                                  help="A string specifying '--norm-means' "
-                                 "and '--norm-vars' values")
+                                      "and '--norm-vars' values")
 
         # egs extraction options.  there is no point adding the chunk context
         # option for non-RNNs (by which we mean basic TDNN-type topologies), as
@@ -759,7 +754,7 @@ class CommonParser(object):
         self.parser.add_argument("--egs.stage", type=int, dest='egs_stage',
                                  default=0,
                                  help="Stage at which get_egs.sh should be "
-                                 "restarted")
+                                      "restarted")
         self.parser.add_argument("--egs.opts", type=str, dest='egs_opts',
                                  default=None,
                                  action=common_lib.NullstrToNoneAction,
@@ -801,15 +796,15 @@ class CommonParser(object):
         self.parser.add_argument("--trainer.samples-per-iter", type=int,
                                  dest='samples_per_iter', default=400000,
                                  help="This is really the number of egs in "
-                                 "each archive.")
+                                      "each archive.")
         self.parser.add_argument("--trainer.lda.rand-prune", type=float,
                                  dest='rand_prune', default=4.0,
                                  help="Value used in preconditioning "
-                                 "matrix estimation")
+                                      "matrix estimation")
         self.parser.add_argument("--trainer.lda.max-lda-jobs", type=int,
                                  dest='max_lda_jobs', default=10,
                                  help="Max number of jobs used for "
-                                 "LDA stats accumulation")
+                                      "LDA stats accumulation")
         self.parser.add_argument("--trainer.presoftmax-prior-scale-power",
                                  type=float,
                                  dest='presoftmax_prior_scale_power',
@@ -840,11 +835,11 @@ class CommonParser(object):
         self.parser.add_argument("--trainer.optimization.num-jobs-initial",
                                  type=int, dest='num_jobs_initial', default=1,
                                  help="Number of neural net jobs to run in "
-                                 "parallel at the start of training")
+                                      "parallel at the start of training")
         self.parser.add_argument("--trainer.optimization.num-jobs-final",
                                  type=int, dest='num_jobs_final', default=8,
                                  help="Number of neural net jobs to run in "
-                                 "parallel at the end of training")
+                                      "parallel at the end of training")
         self.parser.add_argument("--trainer.optimization.max-models-combine",
                                  "--trainer.max-models-combine",
                                  type=int, dest='max_models_combine',
@@ -923,15 +918,15 @@ class CommonParser(object):
                                  default=False,
                                  action=common_lib.StrToBoolAction,
                                  help="Compute train and validation "
-                                 "accuracy per-dim")
+                                      "accuracy per-dim")
 
         # General options
         self.parser.add_argument("--stage", type=int, default=-4,
                                  help="Specifies the stage of the experiment "
-                                 "to execution from")
+                                      "to execution from")
         self.parser.add_argument("--exit-stage", type=int, default=None,
                                  help="If specified, training exits before "
-                                 "running this stage")
+                                      "running this stage")
         self.parser.add_argument("--cmd", type=str, dest="command",
                                  action=common_lib.NullstrToNoneAction,
                                  help="""Specifies the script to launch jobs.
@@ -944,7 +939,7 @@ class CommonParser(object):
         self.parser.add_argument("--use-gpu", type=str,
                                  choices=["true", "false", "yes", "no", "wait"],
                                  help="Use GPU for training. "
-                                 "Note 'true' and 'false' are deprecated.",
+                                      "Note 'true' and 'false' are deprecated.",
                                  default="yes")
         self.parser.add_argument("--cleanup", type=str,
                                  action=common_lib.StrToBoolAction,

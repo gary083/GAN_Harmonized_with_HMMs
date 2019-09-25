@@ -9,6 +9,7 @@
 """
 
 from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -22,7 +23,6 @@ import libs.nnet3.train.common as common_train_lib
 import libs.common as common_lib
 import libs.nnet3.train.frame_level_objf as train_lib
 import libs.nnet3.report.log_parse as nnet3_log_parse
-
 
 logger = logging.getLogger('libs')
 logger.setLevel(logging.INFO)
@@ -63,7 +63,7 @@ def get_args():
     parser.add_argument("--trainer.num-jobs-compute-prior", type=int,
                         dest='num_jobs_compute_prior', default=10,
                         help="The prior computation jobs are single "
-                        "threaded and run on the CPU")
+                             "threaded and run on the CPU")
 
     # Parameters for the optimization
     parser.add_argument("--trainer.optimization.minibatch-size",
@@ -77,15 +77,15 @@ def get_args():
     # General options
     parser.add_argument("--feat-dir", type=str, required=False,
                         help="Directory with features used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--lang", type=str, required=False,
                         help="Language directory")
     parser.add_argument("--ali-dir", type=str, required=True,
                         help="Directory with alignments used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--dir", type=str, required=True,
                         help="Directory to store the models and "
-                        "all other files.")
+                             "all other files.")
 
     print(' '.join(sys.argv), file=sys.stderr)
     print(sys.argv, file=sys.stderr)
@@ -108,7 +108,7 @@ def process_args(args):
         raise Exception("--trainer.rnn.num-chunk-per-minibatch has an invalid value")
 
     if (not os.path.exists(args.dir)
-            or not os.path.exists(args.dir+"/configs")):
+            or not os.path.exists(args.dir + "/configs")):
         raise Exception("This scripts expects {0} to exist and have a configs "
                         "directory which is the output of "
                         "make_configs.py script")
@@ -205,7 +205,7 @@ def train(args, run_opts):
     # we do this as it's a convenient way to get the stats for the 'lda-like'
     # transform.
 
-    if (args.stage <= -5) and os.path.exists(args.dir+"/configs/init.config"):
+    if (args.stage <= -5) and os.path.exists(args.dir + "/configs/init.config"):
         logger.info("Initializing a basic network for estimating "
                     "preconditioning matrix")
         common_lib.execute_command(
@@ -240,9 +240,9 @@ def train(args, run_opts):
 
     [egs_left_context, egs_right_context,
      frames_per_eg_str, num_archives] = (
-         common_train_lib.verify_egs_dir(egs_dir, feat_dim,
-                                         ivector_dim, ivector_id,
-                                         left_context, right_context))
+        common_train_lib.verify_egs_dir(egs_dir, feat_dim,
+                                        ivector_dim, ivector_id,
+                                        left_context, right_context))
     assert str(args.frames_per_eg) == frames_per_eg_str
 
     if args.num_jobs_final > num_archives:
@@ -253,7 +253,7 @@ def train(args, run_opts):
     # use during decoding
     common_train_lib.copy_egs_properties_to_exp_dir(egs_dir, args.dir)
 
-    if args.stage <= -3 and os.path.exists(args.dir+"/configs/init.config"):
+    if args.stage <= -3 and os.path.exists(args.dir + "/configs/init.config"):
         logger.info('Computing the preconditioning matrix for input features')
 
         train_lib.common.compute_preconditioning_matrix(
@@ -265,7 +265,7 @@ def train(args, run_opts):
         logger.info("Computing initial vector for FixedScaleComponent before"
                     " softmax, using priors^{prior_scale} and rescaling to"
                     " average 1".format(
-                        prior_scale=args.presoftmax_prior_scale_power))
+            prior_scale=args.presoftmax_prior_scale_power))
 
         common_train_lib.compute_presoftmax_prior_scale(
             args.dir, args.ali_dir, num_jobs, run_opts,
@@ -359,7 +359,7 @@ def train(args, run_opts):
                 # do a clean up everythin but the last 2 models, under certain
                 # conditions
                 common_train_lib.remove_model(
-                    args.dir, iter-2, num_iters, models_to_combine,
+                    args.dir, iter - 2, num_iters, models_to_combine,
                     args.preserve_model_interval)
 
             if args.email is not None:
@@ -399,11 +399,10 @@ def train(args, run_opts):
 
         logger.info("Re-adjusting priors based on computed posteriors")
         combined_or_last_numbered_model = "{dir}/{iter}.mdl".format(dir=args.dir,
-                iter=real_iter)
+                                                                    iter=real_iter)
         final_model = "{dir}/final.mdl".format(dir=args.dir)
         train_lib.common.adjust_am_priors(args.dir, combined_or_last_numbered_model,
-                avg_post_vec_file, final_model, run_opts)
-
+                                          avg_post_vec_file, final_model, run_opts)
 
     if args.cleanup:
         logger.info("Cleaning up the experiment directory "

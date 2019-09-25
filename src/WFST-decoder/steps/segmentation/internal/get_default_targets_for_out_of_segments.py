@@ -17,9 +17,9 @@ something with fractional weights.
 
 import argparse
 import logging
-import numpy as np
-import subprocess
 import sys
+
+import numpy as np
 
 sys.path.insert(0, 'steps')
 import libs.common as common_lib
@@ -52,10 +52,10 @@ def get_args():
     parser.add_argument("--default-targets", type=str, default=None,
                         action=common_lib.NullstrToNoneAction,
                         help="Vector of default targets for out-of-segments "
-                        "region")
+                             "region")
     parser.add_argument("--length-tolerance", type=int, default=2,
                         help="Tolerate length mismatches of this many frames")
-    parser.add_argument("--verbose", type=int, default=0, choices=[0,1,2],
+    parser.add_argument("--verbose", type=int, default=0, choices=[0, 1, 2],
                         help="Verbose level")
 
     parser.add_argument("--reco2num-frames", type=str, required=True,
@@ -134,7 +134,7 @@ def run(args):
         for reco, utts in reco2utt.iteritems():
             reco_mat = np.repeat(default_targets, reco2num_frames[reco],
                                  axis=0)
-            utts.sort(key=lambda x: segments[x][1])   # sort on start time
+            utts.sort(key=lambda x: segments[x][1])  # sort on start time
             for i, utt in enumerate(utts):
                 if utt not in segments:
                     num_utt_err += 1

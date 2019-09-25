@@ -7,6 +7,7 @@
 
 # we're using python 3.x style print but want it to work in python 2.x,
 from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -74,7 +75,7 @@ def backup_xconfig_file(xconfig_file, config_dir):
     except:
         raise Exception('{0}: error opening file '
                         '{1}/xconfig for output'.format(
-                            sys.argv[0], config_dir))
+            sys.argv[0], config_dir))
     try:
         xconfig_file_in = open(xconfig_file)
     except:
@@ -106,13 +107,13 @@ def write_expanded_xconfig_files(config_dir, all_layers):
     except:
         raise Exception('{0}: error opening file '
                         '{1}/xconfig.expanded.1 for output'.format(
-                            sys.argv[0], config_dir))
+            sys.argv[0], config_dir))
 
     print('# This file was created by the command:\n'
           '# ' + ' '.join(sys.argv) + '\n'
-          '#It contains the same content as ./xconfig but it was parsed and\n'
-          '#default config values were set.\n'
-          '# See also ./xconfig.expanded.2\n', file=xconfig_file_out)
+                                      '#It contains the same content as ./xconfig but it was parsed and\n'
+                                      '#default config values were set.\n'
+                                      '# See also ./xconfig.expanded.2\n', file=xconfig_file_out)
 
     for layer in all_layers:
         print('{}'.format(layer), file=xconfig_file_out)
@@ -123,14 +124,14 @@ def write_expanded_xconfig_files(config_dir, all_layers):
     except:
         raise Exception('{0}: error opening file '
                         '{1}/xconfig.expanded.2 for output'.format(
-                            sys.argv[0], config_dir))
+            sys.argv[0], config_dir))
 
     print('# This file was created by the command:\n'
           '# ' + ' '.join(sys.argv) + '\n'
-          '# It contains the same content as ./xconfig but it was parsed,\n'
-          '# default config values were set, \n'
-          '# and Descriptors (input=xxx) were normalized.\n'
-          '# See also ./xconfig.expanded.1\n',
+                                      '# It contains the same content as ./xconfig but it was parsed,\n'
+                                      '# default config values were set, \n'
+                                      '# and Descriptors (input=xxx) were normalized.\n'
+                                      '# See also ./xconfig.expanded.1\n',
           file=xconfig_file_out)
 
     for layer in all_layers:
@@ -149,25 +150,25 @@ def get_config_headers():
     ans = defaultdict(str)
 
     ans['init'] = (
-        '# This file was created by the command:\n'
-        '# ' + ' '.join(sys.argv) + '\n'
-        '# It contains the input of the network and is used in\n'
-        '# accumulating stats for an LDA-like transform of the\n'
-        '# input features.\n')
+            '# This file was created by the command:\n'
+            '# ' + ' '.join(sys.argv) + '\n'
+                                        '# It contains the input of the network and is used in\n'
+                                        '# accumulating stats for an LDA-like transform of the\n'
+                                        '# input features.\n')
     ans['ref'] = (
-        '# This file was created by the command:\n'
-        '# ' + ' '.join(sys.argv) + '\n'
-        '# It contains the entire neural network, but with those\n'
-        '# components that would normally require fixed vectors/matrices\n'
-        '# read from disk, replaced with random initialization\n'
-        '# (this applies to the LDA-like transform and the\n'
-        '# presoftmax-prior-scale, if applicable).  This file\n'
-        '# is used only to work out the left-context and right-context\n'
-        '# of the network.\n')
+            '# This file was created by the command:\n'
+            '# ' + ' '.join(sys.argv) + '\n'
+                                        '# It contains the entire neural network, but with those\n'
+                                        '# components that would normally require fixed vectors/matrices\n'
+                                        '# read from disk, replaced with random initialization\n'
+                                        '# (this applies to the LDA-like transform and the\n'
+                                        '# presoftmax-prior-scale, if applicable).  This file\n'
+                                        '# is used only to work out the left-context and right-context\n'
+                                        '# of the network.\n')
     ans['final'] = (
-        '# This file was created by the command:\n'
-        '# ' + ' '.join(sys.argv) + '\n'
-        '# It contains the entire neural network.\n')
+            '# This file was created by the command:\n'
+            '# ' + ' '.join(sys.argv) + '\n'
+                                        '# It contains the entire neural network.\n')
 
     return ans
 
@@ -203,15 +204,15 @@ def write_config_files(config_dir, all_layers):
 
     for basename, lines in config_basename_to_lines.items():
         # check the lines num start with 'output-node':
-        num_output_node_lines = sum( [ 1 if line.startswith('output-node' ) else 0
-                                       for line in lines ] )
+        num_output_node_lines = sum([1 if line.startswith('output-node') else 0
+                                     for line in lines])
         if num_output_node_lines == 0:
             if basename == 'init':
-                continue # do not write the init.config
+                continue  # do not write the init.config
             else:
                 print('{0}: error in xconfig file {1}: may be lack of a '
                       'output layer'.format(sys.argv[0], sys.argv[2]),
-                                            file=sys.stderr)
+                      file=sys.stderr)
                 raise
 
         header = config_basename_to_header[basename]
@@ -265,6 +266,7 @@ def add_nnet_context_info(config_dir, nnet_edits=None,
     vf.write('model_right_context={0}\n'.format(info['right-context']))
     vf.close()
 
+
 def check_model_contexts(config_dir, nnet_edits=None, existing_model=None):
     contexts = {}
     for file_name in ['init', 'ref']:
@@ -297,21 +299,20 @@ def check_model_contexts(config_dir, nnet_edits=None, existing_model=None):
                     contexts[file_name][key] = value
 
     if 'init' in contexts:
-        assert('ref' in contexts)
+        assert ('ref' in contexts)
         if ('left-context' in contexts['init'] and
-            'left-context' in contexts['ref']):
+                'left-context' in contexts['ref']):
             if ((contexts['init']['left-context']
                  > contexts['ref']['left-context'])
-                or (contexts['init']['right-context']
-                    > contexts['ref']['right-context'])):
-               raise Exception(
+                    or (contexts['init']['right-context']
+                        > contexts['ref']['right-context'])):
+                raise Exception(
                     "Model specified in {0}/init.config requires greater"
                     " context than the model specified in {0}/ref.config."
                     " This might be due to use of label-delay at the output"
                     " in ref.config. Please use delay=$label_delay in the"
                     " initial fixed-affine-layer of the network, to avoid"
                     " this issue.")
-
 
 
 def main():
@@ -331,7 +332,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 # test:
 # mkdir -p foo; (echo 'input dim=40 name=input'; echo 'output name=output input=Append(-1,0,1)')  >xconfig; ./xconfig_to_configs.py xconfig foo

@@ -11,8 +11,8 @@
 # if you experiment with it.
 
 from __future__ import print_function
-import argparse
 
+import argparse
 
 parser = argparse.ArgumentParser(description="Usage: steps/nnet3/chain/gen_topo.py "
                                              "<colon-separated-nonsilence-phones> <colon-separated-silence-phones>"
@@ -25,9 +25,9 @@ parser.add_argument("silence_phones", type=str,
 
 args = parser.parse_args()
 
-silence_phones = [ int(x) for x in args.silence_phones.split(":") ]
-nonsilence_phones = [ int(x) for x in args.nonsilence_phones.split(":") ]
-all_phones = silence_phones +  nonsilence_phones
+silence_phones = [int(x) for x in args.silence_phones.split(":")]
+nonsilence_phones = [int(x) for x in args.nonsilence_phones.split(":")]
+all_phones = silence_phones + nonsilence_phones
 
 print("<Topology>")
 print("<TopologyEntry>")
@@ -47,4 +47,3 @@ print("<State> 3 <PdfClass> 1 <Transition> 3 0.5 <Transition> 4 0.5 </State>")
 print("<State> 4 </State>")
 print("</TopologyEntry>")
 print("</Topology>")
-

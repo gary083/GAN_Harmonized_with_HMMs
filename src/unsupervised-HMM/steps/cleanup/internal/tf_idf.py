@@ -5,8 +5,9 @@
 for Term-frequency and Inverse-document-frequency values.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import logging
 import math
 import re
@@ -21,6 +22,7 @@ logger.addHandler(logging.NullHandler())
 class IDFStats(object):
     """Stores stats for computing inverse-document-frequencies.
     """
+
     def __init__(self):
         self.num_docs_for_term = {}
         self.num_docs = 0
@@ -70,8 +72,8 @@ class IDFStats(object):
             if num == 0:
                 continue
             assert isinstance(term, tuple)
-            print ("{term} {n}".format(term=" ".join(term), n=num),
-                   file=file_handle)
+            print("{term} {n}".format(term=" ".join(term), n=num),
+                  file=file_handle)
 
     def read(self, file_handle):
         """Loads IDF stats from file. """
@@ -90,6 +92,7 @@ class TFStats(object):
     """Store stats for TF-IDF computation.
     A separate object of IDFStats is stored within this object.
     """
+
     def __init__(self):
         self.raw_counts = {}
         self.max_counts_for_term = {}
@@ -126,7 +129,7 @@ class TFStats(object):
         ngram-order."""
         for n in range(1, ngram_order + 1):
             for i in range(len(text)):
-                term = tuple(text[i:(i+n)])
+                term = tuple(text[i:(i + n)])
                 self.raw_counts.setdefault((term, doc), 0)
                 self.raw_counts[(term, doc)] += 1
 
@@ -168,7 +171,7 @@ class TFStats(object):
             assert len(parts) - 3 == order
             if ngram_order is not None and order > ngram_order:
                 continue
-            term = tuple(parts[1:(order+1)])
+            term = tuple(parts[1:(order + 1)])
             doc = parts[-2]
             counts = float(parts[-1])
 
@@ -235,7 +238,7 @@ class TFIDF(object):
                                    "Something wrong in how this TF-IDF object "
                                    "was created or a bug in the "
                                    "calling script.".format(
-                                       doc, query_id))
+                    doc, query_id))
 
             if source_docs is not None:
                 for src_doc in source_docs:
@@ -250,13 +253,13 @@ class TFIDF(object):
                         src_value = 0
 
                     similarity_scores[(doc, src_doc)] = (
-                        similarity_scores.get((doc, src_doc), 0)
-                        + src_value * value)
+                            similarity_scores.get((doc, src_doc), 0)
+                            + src_value * value)
             else:
                 for src_tup, src_value in source_tfidf.tf_idf.items():
                     similarity_scores[(doc, src_doc)] = (
-                        similarity_scores.get((doc, src_doc), 0)
-                        + src_value * value)
+                            similarity_scores.get((doc, src_doc), 0)
+                            + src_value * value)
 
         if do_length_normalization:
             for doc_pair, value in similarity_scores.items():
@@ -327,14 +330,14 @@ class TFIDF(object):
     def write(self, tf_idf_file):
         """Writes TFIDF object to file."""
 
-        print ("<TFIDF>", file=tf_idf_file)
+        print("<TFIDF>", file=tf_idf_file)
         for tup, value in self.tf_idf.items():
             term, doc = tup
             print("{order} {term} {doc} {tfidf}".format(
                 order=len(term), term=" ".join(term),
                 doc=doc, tfidf=value),
-                  file=tf_idf_file)
-        print ("</TFIDF>", file=tf_idf_file)
+                file=tf_idf_file)
+        print("</TFIDF>", file=tf_idf_file)
 
 
 def write_tfidf_from_stats(
@@ -363,7 +366,7 @@ def write_tfidf_from_stats(
     if idf_stats.num_docs == 0:
         raise RuntimeError("Supplied idf-stats object is empty.")
 
-    print ("<TFIDF>", file=tf_idf_file)
+    print("<TFIDF>", file=tf_idf_file)
     for tup in tf_stats.raw_counts:
         term, doc = tup
 
@@ -385,24 +388,24 @@ def write_tfidf_from_stats(
         print("{order} {term} {doc} {tfidf}".format(
             order=len(term), term=" ".join(term),
             doc=doc, tfidf=tf_value * idf_value),
-              file=tf_idf_file)
-    print ("</TFIDF>", file=tf_idf_file)
+            file=tf_idf_file)
+    print("</TFIDF>", file=tf_idf_file)
 
 
 def read_key(fd):
-  """ [str] = read_key(fd)
-   Read the utterance-key from the opened ark/stream descriptor 'fd'.
-  """
-  str = ''
-  while 1:
-    char = fd.read(1)
-    if char == '' : break
-    if char == ' ' : break
-    str += char
-  str = str.strip()
-  if str == '': return None # end of file,
-  assert(re.match('^[\.a-zA-Z0-9_:-]+$',str) != None) # check format,
-  return str
+    """ [str] = read_key(fd)
+     Read the utterance-key from the opened ark/stream descriptor 'fd'.
+    """
+    str = ''
+    while 1:
+        char = fd.read(1)
+        if char == '': break
+        if char == ' ': break
+        str += char
+    str = str.strip()
+    if str == '': return None  # end of file,
+    assert (re.match('^[\.a-zA-Z0-9_:-]+$', str) != None)  # check format,
+    return str
 
 
 def read_tfidf_ark(file_handle):

@@ -23,6 +23,7 @@ The RTTM format is
 """
 
 from __future__ import print_function
+
 import argparse
 import sys
 
@@ -93,8 +94,8 @@ def main():
 
             print("SPEAKER {0} {1} {2:7.2f} {3:7.2f} "
                   "<NA> <NA> {4} <NA>".format(
-                      file_id, channel, start_time,
-                      duration, spkr), file=rttm_writer)
+                file_id, channel, start_time,
+                duration, spkr), file=rttm_writer)
 
 
 if __name__ == '__main__':

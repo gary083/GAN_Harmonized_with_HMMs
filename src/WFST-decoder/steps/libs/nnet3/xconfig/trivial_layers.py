@@ -8,9 +8,7 @@
 """
 
 from __future__ import print_function
-import math
-import re
-import sys
+
 from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
 
 
@@ -23,12 +21,13 @@ class XconfigRenormComponent(XconfigLayerBase):
       input='[-1]'             [Descriptor giving the input of the layer.]
       target-rms=1.0           [The target RMS of the NormalizeComponent]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
     def set_default_configs(self):
         self.config = {'input': '[-1]',
-                       'target-rms': 1.0 }
+                       'target-rms': 1.0}
 
     def check_configs(self):
         assert self.config['target-rms'] > 0.0
@@ -79,12 +78,13 @@ class XconfigBatchnormComponent(XconfigLayerBase):
       input='[-1]'             [Descriptor giving the input of the layer.]
       target-rms=1.0           [The target RMS of the BatchNormComponent]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
     def set_default_configs(self):
         self.config = {'input': '[-1]',
-                       'target-rms': 1.0 }
+                       'target-rms': 1.0}
 
     def check_configs(self):
         assert self.config['target-rms'] > 0.0
@@ -134,11 +134,12 @@ class XconfigNoOpComponent(XconfigLayerBase):
     Parameters of the class, and their defaults:
       input='[-1]'             [Descriptor giving the input of the layer.]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
     def set_default_configs(self):
-        self.config = {'input': '[-1]' }
+        self.config = {'input': '[-1]'}
 
     def check_configs(self):
         pass
@@ -198,6 +199,7 @@ class XconfigLinearComponent(XconfigLayerBase):
       l2-regularize=0.0
 
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
@@ -206,7 +208,7 @@ class XconfigLinearComponent(XconfigLayerBase):
                        'dim': -1,
                        'orthonormal-constraint': '',
                        'max-change': 0.75,
-                       'l2-regularize': '' }
+                       'l2-regularize': ''}
 
     def check_configs(self):
         if self.config['dim'] <= 0:

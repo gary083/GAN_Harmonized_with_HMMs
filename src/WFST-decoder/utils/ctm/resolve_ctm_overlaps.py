@@ -17,10 +17,9 @@ and the first 2.5s of the second utterance i.e. from 25s to 27.s is truncated.
 """
 
 from __future__ import print_function
-import argparse
-import collections
-import logging
 
+import argparse
+import logging
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)

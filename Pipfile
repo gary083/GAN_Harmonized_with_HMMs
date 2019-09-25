@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+tqdm = "*"
+numpy = "*"
+pyyaml = "*"
+soundfile = "*"
+librosa = "*"
+tensorflow = "==1.13.1"
+"flake8" = "*"
+
+[requires]
+python_version = "3.6"

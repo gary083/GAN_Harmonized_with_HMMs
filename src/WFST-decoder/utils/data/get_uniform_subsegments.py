@@ -6,8 +6,8 @@
 
 import argparse
 import logging
-import sys
 import textwrap
+
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -72,7 +72,7 @@ def run(args):
             new_utt = "{utt_id}-{s:08d}-{e:08d}".format(
                 utt_id=utt_id, s=int(100 * start_relative),
                 e=int(100 * end_relative))
-            print ("{new_utt} {utt_id} {s} {e}".format(
+            print("{new_utt} {utt_id} {s} {e}".format(
                 new_utt=new_utt, utt_id=utt_id, s=start_relative,
                 e=start_relative + args.max_segment_duration))
             start += args.max_segment_duration - args.overlap_duration
@@ -80,16 +80,16 @@ def run(args):
 
         if (args.constant_duration):
             if (dur < 0):
-              continue
+                continue
             if (dur < args.max_remaining_duration):
-              start = max(end_time - args.max_segment_duration, start_time)
+                start = max(end_time - args.max_segment_duration, start_time)
             end = min(start + args.max_segment_duration, end_time)
         else:
             end = end_time
         new_utt = "{utt_id}-{s:08d}-{e:08d}".format(
             utt_id=utt_id, s=int(round(100 * (start - start_time))),
             e=int(round(100 * (end - start_time))))
-        print ("{new_utt} {utt_id} {s} {e}".format(
+        print("{new_utt} {utt_id} {s} {e}".format(
             new_utt=new_utt, utt_id=utt_id, s=start - start_time,
             e=end - start_time))
 

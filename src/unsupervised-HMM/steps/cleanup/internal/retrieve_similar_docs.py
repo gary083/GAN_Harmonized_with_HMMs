@@ -78,11 +78,11 @@ foo1-2 doc1,0,0.2 doc2,1,1 doc3,0.2,0
 """
 
 from __future__ import print_function
+
 import argparse
 import logging
 
 import tf_idf
-
 
 logger = logging.getLogger('__name__')
 handler = logging.StreamHandler()
@@ -301,7 +301,7 @@ def run(args):
                         len(source_doc_ids))):
                 if (scores[(query_id, source_doc_ids[index])]
                         >= args.neighbor_tfidf_threshold * best_score):
-                    best_indexes[index] = (1, 1)    # Type 2
+                    best_indexes[index] = (1, 1)  # Type 2
                     if index > 0 and index - 1 in excluded_indexes:
                         try:
                             # Type 1 and 3
@@ -330,9 +330,9 @@ def run(args):
                 best_index=best_index, best_score=best_score))
         assert (best_doc_id, 1.0, 1.0) in best_docs
 
-        print ("{0} {1}".format(query_id, " ".join(
+        print("{0} {1}".format(query_id, " ".join(
             ["%s,%.2f,%.2f" % x for x in best_docs])),
-               file=args.relevant_docs)
+              file=args.relevant_docs)
 
     if num_queries == 0:
         raise RuntimeError("Failed to retrieve any document.")

@@ -3,9 +3,10 @@
 # Apache 2.0
 
 from __future__ import print_function
+
 import sys
 
-vocab=set()
+vocab = set()
 with open(sys.argv[1]) as vocabfile:
     for line in vocabfile:
         vocab.add(line.strip())

@@ -16,8 +16,9 @@ it subsamples by averaging.
 
 import argparse
 import logging
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, 'steps')
 import libs.common as common_lib
@@ -46,7 +47,7 @@ it subsamples by averaging.""")
 
     parser.add_argument("--subsampling-factor", type=int, default=1,
                         help="The sampling rate is scaled by this factor")
-    parser.add_argument("--verbose", type=int, default=0, choices=[0,1,2],
+    parser.add_argument("--verbose", type=int, default=0, choices=[0, 1, 2],
                         help="Verbose level")
 
     parser.add_argument("targets_in_ark", type=argparse.FileType('r'),
@@ -58,7 +59,7 @@ it subsamples by averaging.""")
 
     if args.subsampling_factor < 1:
         raise ValueError("Invalid --subsampling-factor value {0}".format(
-                            args.subsampling_factor))
+            args.subsampling_factor))
 
     if args.verbose >= 2:
         logger.setLevel(logging.DEBUG)
@@ -73,7 +74,7 @@ def run(args):
         mat = np.matrix(mat)
         if args.subsampling_factor > 0:
             num_indexes = ((mat.shape[0] + args.subsampling_factor - 1)
-                            / args.subsampling_factor)
+                           / args.subsampling_factor)
 
         out_mat = np.zeros([num_indexes, mat.shape[1]])
         i = 0

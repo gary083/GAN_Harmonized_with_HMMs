@@ -11,6 +11,7 @@ and '2' for speech frames.
 """
 
 from __future__ import print_function
+
 import argparse
 import logging
 import sys
@@ -28,6 +29,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 global_verbose = 0
+
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -49,13 +51,12 @@ and 2 for speech frames.
 
     parser.add_argument("--segment-padding", type=float, default=0.2,
                         help="Additional padding on speech segments. But we "
-                        "ensure that the padding does not go beyond the "
-                        "adjacent segment.")
-
+                             "ensure that the padding does not go beyond the "
+                             "adjacent segment.")
 
     parser.add_argument("in_sad", type=str,
                         help="Input file containing alignments in "
-                        "text archive format")
+                             "text archive format")
     parser.add_argument("out_segments", type=str,
                         help="Output kaldi segments file")
 
@@ -80,6 +81,7 @@ def to_str(segment):
 
 class SegmenterStats(object):
     """Stores stats about the post-process stages"""
+
     def __init__(self):
         self.num_segments = 0
         self.initial_duration = 0.0
@@ -98,10 +100,10 @@ class SegmenterStats(object):
                 "initial-duration={initial_duration}, "
                 "padding-duration={padding_duration}, "
                 "final-duration={final_duration}".format(
-                    num_segments=self.num_segments,
-                    initial_duration=self.initial_duration,
-                    padding_duration=self.padding_duration,
-                    final_duration=self.final_duration))
+            num_segments=self.num_segments,
+            initial_duration=self.initial_duration,
+            padding_duration=self.padding_duration,
+            final_duration=self.final_duration))
 
 
 def process_label(text_label):
@@ -121,6 +123,7 @@ def process_label(text_label):
 
 class Segmentation(object):
     """Stores segmentation for an utterances"""
+
     def __init__(self):
         self.segments = None
         self.stats = SegmenterStats()
@@ -164,19 +167,19 @@ class Segmentation(object):
         or the duration of the utterance 'max_duration'."""
         for i, segment in enumerate(self.segments):
             assert segment[2] == 2, segment
-            segment[0] -= segment_padding   # try adding padding on the left side
+            segment[0] -= segment_padding  # try adding padding on the left side
             self.stats.padding_duration += segment_padding
             if segment[0] < 0.0:
                 # Padding takes the segment start to before the beginning of the utterance.
                 # Reduce padding.
                 self.stats.padding_duration += segment[0]
                 segment[0] = 0.0
-            if i >= 1 and self.segments[i-1][1] > segment[0]:
+            if i >= 1 and self.segments[i - 1][1] > segment[0]:
                 # Padding takes the segment start to before the end the previous segment.
                 # Reduce padding.
                 self.stats.padding_duration -= (
-                    self.segments[i-1][1] - segment[0])
-                segment[0] = self.segments[i-1][1]
+                        self.segments[i - 1][1] - segment[0])
+                segment[0] = self.segments[i - 1][1]
 
             segment[1] += segment_padding
             self.stats.padding_duration += segment_padding
@@ -186,12 +189,12 @@ class Segmentation(object):
                 self.stats.padding_duration -= (segment[1] - max_duration)
                 segment[1] = max_duration
             if (i + 1 < len(self.segments)
-                    and segment[1] > self.segments[i+1][0]):
+                    and segment[1] > self.segments[i + 1][0]):
                 # Padding takes the segment end beyond the start of the next segment.
                 # Reduce padding.
                 self.stats.padding_duration -= (
-                    segment[1] - self.segments[i+1][0])
-                segment[1] = self.segments[i+1][0]
+                        segment[1] - self.segments[i + 1][0])
+                segment[1] = self.segments[i + 1][0]
 
     def write(self, key, file_handle):
         """Write segments to file"""
@@ -201,9 +204,9 @@ class Segmentation(object):
         for segment in self.segments:
             seg_id = "{key}-{st:07d}-{end:07d}".format(
                 key=key, st=int(segment[0] * 100), end=int(segment[1] * 100))
-            print ("{seg_id} {key} {st:.2f} {end:.2f}".format(
+            print("{seg_id} {key} {st:.2f} {end:.2f}".format(
                 seg_id=seg_id, key=key, st=segment[0], end=segment[1]),
-                   file=file_handle)
+                file=file_handle)
 
 
 def run(args):

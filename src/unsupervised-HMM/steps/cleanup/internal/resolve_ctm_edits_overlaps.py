@@ -14,8 +14,9 @@ little more advanced since we have access to the WER
 in the two overlapping segments, and chooses the better one.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import collections
 import logging
@@ -308,8 +309,8 @@ def run(args):
         try:
             if len(ctm_edits_for_reco) == 0:
                 logger.warn('CTMs for recording %s is empty.',
-                             reco)
-                continue   # Go to the next recording
+                            reco)
+                continue  # Go to the next recording
 
             # Process CTMs in the recordings
             ctm_edits_for_reco = resolve_overlaps(ctm_edits_for_reco, segments)

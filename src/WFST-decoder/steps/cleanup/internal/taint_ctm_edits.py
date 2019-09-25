@@ -5,7 +5,9 @@
 # Apache 2.0
 
 from __future__ import print_function
-import sys, operator, argparse, os
+
+import argparse
+import sys
 from collections import defaultdict
 
 # This script reads and writes the 'ctm-edits' file that is
@@ -38,34 +40,32 @@ from collections import defaultdict
 # The rule for tainting is quite simple; see the code.
 
 
-
 parser = argparse.ArgumentParser(
-    description = "This program modifies the ctm-edits format to identify "
-    "silence and 'fixed' non-scored-word lines, and lines where the hyp is "
-    "<unk> and the reference is a real but OOV word, where there is a relatively "
-    "high probability that something is going wrong so we shouldn't trust "
-    "this line.  It adds the field 'tainted' to such "
-    "lines.  Lines in the ctm representing deletions from the reference will "
-    "be removed if they have 'tainted' adjacent lines (since it won't be clear "
-    "where such reference words were really realized, if at all). "
-    "See comments at the top of the script for more information.")
+    description="This program modifies the ctm-edits format to identify "
+                "silence and 'fixed' non-scored-word lines, and lines where the hyp is "
+                "<unk> and the reference is a real but OOV word, where there is a relatively "
+                "high probability that something is going wrong so we shouldn't trust "
+                "this line.  It adds the field 'tainted' to such "
+                "lines.  Lines in the ctm representing deletions from the reference will "
+                "be removed if they have 'tainted' adjacent lines (since it won't be clear "
+                "where such reference words were really realized, if at all). "
+                "See comments at the top of the script for more information.")
 
-parser.add_argument("--verbose", type = int, default = 1,
-                    choices=[0,1,2,3],
-                    help = "Verbose level, higher = more verbose output")
+parser.add_argument("--verbose", type=int, default=1,
+                    choices=[0, 1, 2, 3],
+                    help="Verbose level, higher = more verbose output")
 parser.add_argument("--remove-deletions", type=str, default="true",
                     choices=["true", "false"],
-                    help = "Remove deletions next to taintable lines")
-parser.add_argument("ctm_edits_in", metavar = "<ctm-edits-in>",
-                    help = "Filename of input ctm-edits file. "
-                    "Use /dev/stdin for standard input.")
-parser.add_argument("ctm_edits_out", metavar = "<ctm-edits-out>",
-                    help = "Filename of output ctm-edits file. "
-                    "Use /dev/stdout for standard output.")
+                    help="Remove deletions next to taintable lines")
+parser.add_argument("ctm_edits_in", metavar="<ctm-edits-in>",
+                    help="Filename of input ctm-edits file. "
+                         "Use /dev/stdin for standard input.")
+parser.add_argument("ctm_edits_out", metavar="<ctm-edits-out>",
+                    help="Filename of output ctm-edits file. "
+                         "Use /dev/stdout for standard output.")
 
 args = parser.parse_args()
 args.remove_deletions = bool(args.remove_deletions == "true")
-
 
 
 # This function is the core of the program, that does the tainting and
@@ -76,12 +76,12 @@ args.remove_deletions = bool(args.remove_deletions == "true")
 # input will not have the same value afterwards.
 def ProcessUtterance(split_lines_of_utt, remove_deletions=True):
     global num_lines_of_type, num_tainted_lines, \
-           num_del_lines_giving_taint, num_sub_lines_giving_taint, \
-           num_ins_lines_giving_taint
+        num_del_lines_giving_taint, num_sub_lines_giving_taint, \
+        num_ins_lines_giving_taint
 
     # work out whether each line is taintable [i.e. silence or fix or unk replacing
     # real-word].
-    taintable = [ False ] * len(split_lines_of_utt)
+    taintable = [False] * len(split_lines_of_utt)
     for i in range(len(split_lines_of_utt)):
         edit_type = split_lines_of_utt[i][7]
         if edit_type == 'sil' or edit_type == 'fix':
@@ -93,7 +93,6 @@ def ProcessUtterance(split_lines_of_utt, remove_deletions=True):
             # don't have good confidence that the alignments of such words are
             # accurate if they are adjacent to errors.
             taintable[i] = True
-
 
     for i in range(len(split_lines_of_utt)):
         edit_type = split_lines_of_utt[i][7]
@@ -147,7 +146,6 @@ def ProcessData():
                  "file {0}".format(args.ctm_edits_out))
     num_lines_processed = 0
 
-
     # Most of what we're doing in the lines below is splitting the input lines
     # and grouping them per utterance, before giving them to ProcessUtterance()
     # and then printing the modified lines.
@@ -165,7 +163,7 @@ def ProcessData():
             split_lines_of_cur_utterance = ProcessUtterance(
                 split_lines_of_cur_utterance, args.remove_deletions)
             for split_line in split_lines_of_cur_utterance:
-                print(' '.join(split_line), file = f_out)
+                print(' '.join(split_line), file=f_out)
             split_lines_of_cur_utterance = []
             if len(split_pending_line) == 0:
                 break
@@ -184,33 +182,34 @@ def ProcessData():
         sys.exit("taint_ctm_edits.py: error closing ctm-edits output "
                  "(broken pipe or full disk?)")
 
+
 def PrintNonScoredStats():
     if args.verbose < 1:
         return
     if num_lines == 0:
-        print("taint_ctm_edits.py: processed no input.", file = sys.stderr)
+        print("taint_ctm_edits.py: processed no input.", file=sys.stderr)
     num_lines_modified = sum(ref_change_stats.values())
     num_incorrect_lines = num_lines - num_correct_lines
-    percent_lines_incorrect= '%.2f' % (num_incorrect_lines * 100.0 / num_lines)
+    percent_lines_incorrect = '%.2f' % (num_incorrect_lines * 100.0 / num_lines)
     percent_modified = '%.2f' % (num_lines_modified * 100.0 / num_lines);
     percent_of_incorrect_modified = '%.2f' % (num_lines_modified * 100.0 / num_incorrect_lines)
     print("taint_ctm_edits.py: processed {0} lines of ctm ({1}% of which incorrect), "
           "of which {2} were changed fixing the reference for non-scored words "
           "({3}% of lines, or {4}% of incorrect lines)".format(
-            num_lines, percent_lines_incorrect, num_lines_modified,
-            percent_modified, percent_of_incorrect_modified),
-          file = sys.stderr)
+        num_lines, percent_lines_incorrect, num_lines_modified,
+        percent_modified, percent_of_incorrect_modified),
+        file=sys.stderr)
 
     keys = sorted(ref_change_stats.keys(), reverse=True,
-                  key = lambda x: ref_change_stats[x])
+                  key=lambda x: ref_change_stats[x])
     num_keys_to_print = 40 if args.verbose >= 2 else 10
 
     print("taint_ctm_edits.py: most common edits (as percentages "
           "of all such edits) are:\n" +
-          ('\n'.join([ '%s [%.2f%%]' % (k, ref_change_stats[k]*100.0/num_lines_modified)
-                     for k in keys[0:num_keys_to_print]]))
-          + '\n...'if num_keys_to_print < len(keys) else '',
-          file = sys.stderr)
+          ('\n'.join(['%s [%.2f%%]' % (k, ref_change_stats[k] * 100.0 / num_lines_modified)
+                      for k in keys[0:num_keys_to_print]]))
+          + '\n...' if num_keys_to_print < len(keys) else '',
+          file=sys.stderr)
 
 
 def PrintStats():
@@ -218,11 +217,10 @@ def PrintStats():
     if args.verbose < 1 or tot_lines == 0:
         return
     print("taint_ctm_edits.py: processed {0} input lines, whose edit-types were: ".format(tot_lines) +
-          ', '.join([ '%s = %.2f%%' % (k, num_lines_of_type[k] * 100.0 / tot_lines)
-                      for k in sorted(num_lines_of_type.keys(), reverse = True,
-                                      key = lambda k: num_lines_of_type[k])  ]),
-          file = sys.stderr)
-
+          ', '.join(['%s = %.2f%%' % (k, num_lines_of_type[k] * 100.0 / tot_lines)
+                     for k in sorted(num_lines_of_type.keys(), reverse=True,
+                                     key=lambda k: num_lines_of_type[k])]),
+          file=sys.stderr)
 
     del_giving_taint_percent = num_del_lines_giving_taint * 100.0 / tot_lines
     sub_giving_taint_percent = num_sub_lines_giving_taint * 100.0 / tot_lines
@@ -233,8 +231,7 @@ def PrintStats():
           "(deletions, substitutions, insertions) that tainted adjacent lines.  %.2f%% of all "
           "lines were tainted." % (del_giving_taint_percent, sub_giving_taint_percent,
                                    ins_giving_taint_percent, tainted_lines_percent),
-          file = sys.stderr)
-
+          file=sys.stderr)
 
 
 # num_lines_of_type will map from line-type ('cor', 'sub', etc.) to count.
@@ -246,4 +243,3 @@ num_ins_lines_giving_taint = 0
 
 ProcessData()
 PrintStats()
-

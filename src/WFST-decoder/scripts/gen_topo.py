@@ -11,8 +11,8 @@
 # if you experiment with it.
 
 from __future__ import print_function
-import argparse
 
+import argparse
 
 parser = argparse.ArgumentParser(description="Usage: steps/nnet3/chain/gen_topo.py "
                                              "<colon-separated-nonsilence-phones> <colon-separated-silence-phones>"
@@ -27,17 +27,17 @@ parser.add_argument("--self_loop_prob", type=float, default=0.5,
 
 args = parser.parse_args()
 
-silence_phones = [ int(x) for x in args.silence_phones.split(":") ]
-nonsilence_phones = [ int(x) for x in args.nonsilence_phones.split(":") ]
-all_phones = silence_phones +  nonsilence_phones
+silence_phones = [int(x) for x in args.silence_phones.split(":")]
+nonsilence_phones = [int(x) for x in args.nonsilence_phones.split(":")]
+all_phones = silence_phones + nonsilence_phones
 
 print("<Topology>")
 print("<TopologyEntry>")
 print("<ForPhones>")
 print(" ".join([str(x) for x in all_phones]))
 print("</ForPhones>")
-print("<State> 0 <PdfClass> 0 <Transition> 0 {} <Transition> 1 {} </State>".format(args.self_loop_prob,1 - args.self_loop_prob))
+print("<State> 0 <PdfClass> 0 <Transition> 0 {} <Transition> 1 {} </State>".format(args.self_loop_prob,
+                                                                                   1 - args.self_loop_prob))
 print("<State> 1 </State>")
 print("</TopologyEntry>")
 print("</Topology>")
-

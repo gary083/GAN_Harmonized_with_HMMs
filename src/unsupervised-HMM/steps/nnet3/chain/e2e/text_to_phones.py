@@ -11,10 +11,10 @@
 from __future__ import print_function
 
 import argparse
-from os.path import join
-import sys
 import copy
 import random
+import sys
+from os.path import join
 
 parser = argparse.ArgumentParser(description="""This script reads
     data/train/text from std input and converts the word transcriptions
@@ -26,7 +26,6 @@ parser.add_argument('--edge-silprob', type=float, default=0.8,
 parser.add_argument('--between-silprob', type=float, default=0.2,
                     help="Probability of optional silence between the words.")
 
-
 args = parser.parse_args()
 
 # optional silence
@@ -34,7 +33,6 @@ sil = open(join(args.langdir,
                 "phones/optional_silence.txt")).readline().strip()
 
 oov_word = open(join(args.langdir, "oov.txt")).readline().strip()
-
 
 # load the lexicon
 lexicon = {}
@@ -49,8 +47,8 @@ n_fail = 0
 for line in sys.stdin:
     line = line.strip().split()
     key = line[0]
-    word_trans = line[1:]   # word-level transcription
-    phone_trans = []        # phone-level transcription
+    word_trans = line[1:]  # word-level transcription
+    phone_trans = []  # phone-level transcription
     if random.random() < args.edge_silprob:
         phone_trans += [sil]
     for i in range(len(word_trans)):

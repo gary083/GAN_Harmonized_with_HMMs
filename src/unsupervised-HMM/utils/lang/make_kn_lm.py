@@ -15,14 +15,13 @@
 # The data structure is based on: kaldi/egs/wsj/s5/utils/lang/make_phone_lm.py
 # The smoothing algorithm is based on: http://www.speech.sri.com/projects/srilm/manpages/ngram-discount.7.html
 
-import sys
-import os
-import re
+import argparse
 import io
 import math
-import argparse
+import os
+import re
+import sys
 from collections import Counter, defaultdict
-
 
 parser = argparse.ArgumentParser(description="""
     Generate kneser-ney language model as arpa format. By default,
@@ -35,10 +34,10 @@ parser.add_argument("-verbose", type=int, default=0, choices=[0, 1, 2, 3, 4, 5],
 args = parser.parse_args()
 
 default_encoding = "latin-1"  # For encoding-agnostic scripts, we assume byte stream as input.
-                              # Need to be very careful about the use of strip() and split()
-                              # in this case, because there is a latin-1 whitespace character
-                              # (nbsp) which is part of the unicode encoding range.
-                              # Ref: kaldi/egs/wsj/s5/utils/lang/bpe/prepend_words.py @ 69cd717
+# Need to be very careful about the use of strip() and split()
+# in this case, because there is a latin-1 whitespace character
+# (nbsp) which is part of the unicode encoding range.
+# Ref: kaldi/egs/wsj/s5/utils/lang/bpe/prepend_words.py @ 69cd717
 strip_chars = " \t\r\n"
 whitespace = re.compile("[ \t]+")
 
@@ -65,7 +64,7 @@ class CountsForHistory:
         return ' total={0}: {1}'.format(
             str(self.total_count),
             ', '.join(['{0} -> {1}'.format(word, count)
-                      for word, count in self.word_to_count.items()]))
+                       for word, count in self.word_to_count.items()]))
 
     def add_count(self, predicted_word, context_word, count):
         assert count >= 0
@@ -111,7 +110,7 @@ class NgramCounts:
         words = [self.bos_symbol] + whitespace.split(line) + [self.eos_symbol]
 
         for i in range(len(words)):
-            for n in range(1, self.ngram_order+1):
+            for n in range(1, self.ngram_order + 1):
                 if i + n > len(words):
                     break
 
@@ -121,7 +120,7 @@ class NgramCounts:
                 if i == 0 or n == self.ngram_order:
                     context_word = None
                 else:
-                    context_word = words[i-1]
+                    context_word = words[i - 1]
 
                 self.add_count(history, predicted_word, context_word, 1)
 
@@ -156,8 +155,8 @@ class NgramCounts:
         # Return value: d is a list of floats, where d[N+1] = D_N
 
         self.d = [0]  # for the lowest order, i.e., 1-gram, we do not need to discount, thus the constant is 0
-                      # This is a special case: as we currently assumed having seen all vocabularies in the dictionary,
-                      # but perhaps this is not the case for some other scenarios.
+        # This is a special case: as we currently assumed having seen all vocabularies in the dictionary,
+        # but perhaps this is not the case for some other scenarios.
         for n in range(1, self.ngram_order):
             this_order_counts = self.counts[n]
             n1 = 0
@@ -200,7 +199,8 @@ class NgramCounts:
                 else:  # patterns begin with <s>, they do not have "modified count", so use raw count instead
                     for w in counts_for_hist.word_to_count.keys():
                         n_star_z = counts_for_hist.word_to_count[w]
-                        counts_for_hist.word_to_f[w] = max((n_star_z - self.d[n]), 0) * 1.0 / counts_for_hist.total_count
+                        counts_for_hist.word_to_f[w] = max((n_star_z - self.d[n]),
+                                                           0) * 1.0 / counts_for_hist.total_count
 
     def cal_bow(self):
         # Backoff weights are only necessary for ngrams which form a prefix of a longer ngram.

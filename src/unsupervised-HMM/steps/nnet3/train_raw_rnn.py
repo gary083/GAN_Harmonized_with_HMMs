@@ -9,12 +9,13 @@
 """ This script is similar to steps/nnet3/train_rnn.py but trains a
 raw neural network instead of an acoustic model.
 """
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
-import pprint
 import os
+import pprint
 import sys
 import traceback
 
@@ -91,7 +92,7 @@ def get_args():
     parser.add_argument("--trainer.num-jobs-compute-prior", type=int,
                         dest='num_jobs_compute_prior', default=10,
                         help="The prior computation jobs are single "
-                        "threaded and run on the CPU")
+                             "threaded and run on the CPU")
 
     # Parameters for the optimization
     parser.add_argument("--trainer.optimization.momentum", type=float,
@@ -147,12 +148,12 @@ def get_args():
                         help="Train neural network using dense targets")
     parser.add_argument("--feat-dir", type=str, required=True,
                         help="Directory with features used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--targets-scp", type=str, required=True,
                         help="Target for training neural network.")
     parser.add_argument("--dir", type=str, required=True,
                         help="Directory to store the models and "
-                        "all other files.")
+                             "all other files.")
 
     print(' '.join(sys.argv))
     print(sys.argv)
@@ -182,8 +183,8 @@ def process_args(args):
 
     if (not os.path.exists(args.dir)):
         raise Exception("This script expects --dir={0} to exist.")
-    if (not os.path.exists(args.dir+"/configs") and
-        (args.input_model is None or not os.path.exists(args.input_model))):
+    if (not os.path.exists(args.dir + "/configs") and
+            (args.input_model is None or not os.path.exists(args.input_model))):
         raise Exception("Either --trainer.input-model option should be supplied, "
                         "and exist; or the {0}/configs directory should exist."
                         "{0}/configs is the output of make_configs.py"
@@ -275,8 +276,8 @@ def train(args, run_opts):
     # we do this as it's a convenient way to get the stats for the 'lda-like'
     # transform.
 
-    if (args.stage <= -4) and os.path.exists(args.dir+"/configs/init.config") and \
-       (args.input_model is None):
+    if (args.stage <= -4) and os.path.exists(args.dir + "/configs/init.config") and \
+            (args.input_model is None):
         logger.info("Initializing the network for computing the LDA stats")
         common_lib.execute_command(
             """{command} {dir}/log/nnet_init.log \
@@ -305,7 +306,7 @@ def train(args, run_opts):
             except KeyError as e:
                 raise Exception("KeyError {0}: Variables need to be defined "
                                 "in {1}".format(
-                                    str(e), '{0}/configs'.format(args.dir)))
+                    str(e), '{0}/configs'.format(args.dir)))
 
         train_lib.raw_model.generate_egs_using_targets(
             data=args.feat_dir, targets_scp=args.targets_scp,
@@ -332,11 +333,11 @@ def train(args, run_opts):
 
     [egs_left_context, egs_right_context,
      frames_per_eg_str, num_archives] = (
-         common_train_lib.verify_egs_dir(egs_dir, feat_dim,
-                                         ivector_dim, ivector_id,
-                                         left_context, right_context,
-                                         left_context_initial,
-                                         right_context_final))
+        common_train_lib.verify_egs_dir(egs_dir, feat_dim,
+                                        ivector_dim, ivector_id,
+                                        left_context, right_context,
+                                        left_context_initial,
+                                        right_context_final))
     if args.chunk_width != frames_per_eg_str:
         raise Exception("mismatch between --egs.chunk-width and the frames_per_eg "
                         "in the egs dir {0} vs {1}".format(args.chunk_width,
@@ -350,8 +351,8 @@ def train(args, run_opts):
     # use during decoding
     common_train_lib.copy_egs_properties_to_exp_dir(egs_dir, args.dir)
 
-    if args.stage <= -2 and os.path.exists(args.dir+"/configs/init.config") and \
-       (args.input_model is None):
+    if args.stage <= -2 and os.path.exists(args.dir + "/configs/init.config") and \
+            (args.input_model is None):
         logger.info('Computing the preconditioning matrix for input features')
 
         train_lib.common.compute_preconditioning_matrix(
@@ -402,7 +403,7 @@ def train(args, run_opts):
     if args.deriv_truncate_margin is not None:
         min_deriv_time = -args.deriv_truncate_margin - model_left_context
         max_deriv_time_relative = \
-           args.deriv_truncate_margin + model_right_context
+            args.deriv_truncate_margin + model_right_context
 
     logger.info("Training will run for {0} epochs = "
                 "{1} iterations".format(args.num_epochs, num_iters))
@@ -434,9 +435,9 @@ def train(args, run_opts):
             if args.shrink_value < shrinkage_value:
                 shrinkage_value = (args.shrink_value
                                    if common_train_lib.should_do_shrinkage(
-                                           iter, model_file,
-                                           args.shrink_saturation_threshold,
-                                           get_raw_nnet_from_am=False)
+                    iter, model_file,
+                    args.shrink_saturation_threshold,
+                    get_raw_nnet_from_am=False)
                                    else shrinkage_value)
 
             percent = num_archives_processed * 100.0 / num_archives_to_process
@@ -482,7 +483,7 @@ def train(args, run_opts):
                 # do a clean up everythin but the last 2 models, under certain
                 # conditions
                 common_train_lib.remove_model(
-                    args.dir, iter-2, num_iters, models_to_combine,
+                    args.dir, iter - 2, num_iters, models_to_combine,
                     args.preserve_model_interval,
                     get_raw_nnet_from_am=False)
 
@@ -567,6 +568,7 @@ def main():
         if not isinstance(e, KeyboardInterrupt):
             traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

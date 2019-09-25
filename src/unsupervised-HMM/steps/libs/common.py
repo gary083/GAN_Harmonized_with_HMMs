@@ -1,5 +1,3 @@
-
-
 # Copyright 2016 Vijayaditya Peddinti.
 #           2016 Vimal Manohar
 #           2017 Johns Hopkins University (author: Daniel Povey)
@@ -9,8 +7,9 @@
 commonly used in many kaldi python scripts.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
 import math
@@ -37,7 +36,7 @@ def send_mail(message, subject, email_id):
                 email=email_id), shell=True)
     except Exception as e:
         logger.info("Unable to send mail due to error:\n {error}".format(
-                        error=str(e)))
+            error=str(e)))
         pass
 
 
@@ -84,6 +83,7 @@ class smart_open(object):
     e.g.: with smart_open(filename, 'w') as fh:
             print ("foo", file=fh)
     """
+
     def __init__(self, filename, mode="r"):
         self.filename = filename
         self.mode = mode
@@ -113,6 +113,7 @@ class smart_open(object):
     e.g.: with smart_open(filename, 'w') as fh:
             print ("foo", file=fh)
     """
+
     def __init__(self, filename, mode="r"):
         self.filename = filename
         self.mode = mode
@@ -155,10 +156,10 @@ def execute_command(command):
     p.communicate()
     if p.returncode is not 0:
         raise Exception("Command exited with status {0}: {1}".format(
-                p.returncode, command))
+            p.returncode, command))
 
 
-def get_command_stdout(command, require_zero_status = True):
+def get_command_stdout(command, require_zero_status=True):
     """ Executes a command and returns its stdout output as a string.  The
         command is executed with shell=True, so it may contain pipes and
         other shell constructs.
@@ -183,8 +184,6 @@ def get_command_stdout(command, require_zero_status = True):
     return stdout if type(stdout) is str else stdout.decode()
 
 
-
-
 def wait_for_background_commands():
     """ This waits for all threads to exit.  You will often want to
         run this at the end of programs that have launched background
@@ -194,7 +193,8 @@ def wait_for_background_commands():
         if not t == threading.current_thread():
             t.join()
 
-def background_command(command, require_zero_status = False):
+
+def background_command(command, require_zero_status=False):
     """Executes a command in a separate thread, like running with '&' in the shell.
        If you want the program to die if the command eventually returns with
        nonzero status, then set require_zero_status to True.  'command' will be
@@ -218,8 +218,8 @@ def background_command(command, require_zero_status = False):
     p = subprocess.Popen(command, shell=True)
     thread = threading.Thread(target=background_command_waiter,
                               args=(command, p, require_zero_status))
-    thread.daemon=True  # make sure it exits if main thread is terminated
-                        # abnormally.
+    thread.daemon = True  # make sure it exits if main thread is terminated
+    # abnormally.
     thread.start()
     return thread
 
@@ -245,7 +245,7 @@ def get_number_of_leaves_from_tree(alidir):
     stdout = get_command_stdout(
         "tree-info {0}/tree 2>/dev/null | grep num-pdfs".format(alidir))
     parts = stdout.split()
-    assert(parts[0] == "num-pdfs")
+    assert (parts[0] == "num-pdfs")
     num_leaves = int(parts[1])
     if num_leaves == 0:
         raise Exception("Number of leaves is 0")
@@ -257,7 +257,7 @@ def get_number_of_leaves_from_model(dir):
         "am-info {0}/final.mdl 2>/dev/null | grep -w pdfs".format(dir))
     parts = stdout.split()
     # number of pdfs 7115
-    assert(' '.join(parts[0:3]) == "number of pdfs")
+    assert (' '.join(parts[0:3]) == "number of pdfs")
     num_leaves = int(parts[3])
     if num_leaves == 0:
         raise Exception("Number of leaves is 0")
@@ -283,6 +283,7 @@ def get_ivector_dim(ivector_dir=None):
     ivector_dim = int(stdout_val)
     return ivector_dim
 
+
 def get_ivector_extractor_id(ivector_dir=None):
     if ivector_dir is None:
         return None
@@ -293,6 +294,7 @@ def get_ivector_extractor_id(ivector_dir=None):
         return None
 
     return stdout_val.strip()
+
 
 def get_feat_dim(feat_dir):
     if feat_dir is None:
@@ -370,10 +372,10 @@ def write_matrix_ascii(file_or_fd, mat, key=None):
 
     try:
         if key is not None:
-            print ("{0} [".format(key),
-                   file=fd)  # ark-files have keys (utterance-id)
+            print("{0} [".format(key),
+                  file=fd)  # ark-files have keys (utterance-id)
         else:
-            print (" [", file=fd)
+            print(" [", file=fd)
 
         num_cols = 0
         for i, row in enumerate(mat):
@@ -386,9 +388,9 @@ def write_matrix_ascii(file_or_fd, mat, key=None):
 
             if i == len(mat) - 1:
                 line += " ]"
-            print (line, file=fd)
+            print(line, file=fd)
     finally:
-        if fd is not file_or_fd : fd.close()
+        if fd is not file_or_fd: fd.close()
 
 
 def read_matrix_ascii(file_or_fd):
@@ -418,7 +420,7 @@ def read_matrix_ascii(file_or_fd):
         if len(line) == 0:
             logger.error("Kaldi matrix file %s has incorrect format; "
                          "got EOF before end of matrix", fname)
-        if len(line.strip()) == 0 : continue # skip empty line
+        if len(line.strip()) == 0: continue  # skip empty line
         arr = line.strip().split()
         if arr[-1] != ']':
             rows.append([float(x) for x in arr])  # not last line
@@ -430,21 +432,21 @@ def read_matrix_ascii(file_or_fd):
 
 
 def read_key(fd):
-  """ [str] = read_key(fd)
-   Read the utterance-key from the opened ark/stream descriptor 'fd'.
-  """
-  str_ = ''
-  while True:
-    char = fd.read(1)
-    if char == '':
-        break
-    if char == ' ':
-        break
-    str_ += char
-  str_ = str_.strip()
-  if str_ == '':
-      return None   # end of file,
-  return str_
+    """ [str] = read_key(fd)
+     Read the utterance-key from the opened ark/stream descriptor 'fd'.
+    """
+    str_ = ''
+    while True:
+        char = fd.read(1)
+        if char == '':
+            break
+        if char == ' ':
+            break
+        str_ += char
+    str_ = str_.strip()
+    if str_ == '':
+        return None  # end of file,
+    return str_
 
 
 def read_mat_ark(file_or_fd):
@@ -466,9 +468,9 @@ def read_mat_ark(file_or_fd):
     try:
         key = read_key(fd)
         while key:
-          mat = read_matrix_ascii(fd)
-          yield key, mat
-          key = read_key(fd)
+            mat = read_matrix_ascii(fd)
+            yield key, mat
+            key = read_key(fd)
     finally:
         if fd is not file_or_fd:
             fd.close()

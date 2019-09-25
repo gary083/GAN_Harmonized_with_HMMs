@@ -3,11 +3,12 @@
 # Copyright 2016  Johns Hopkins University (Author: Daniel Povey)
 # Apache 2.0.
 
-from __future__ import print_function
 from __future__ import division
-import sys
+from __future__ import print_function
+
 import argparse
 import math
+import sys
 from collections import defaultdict
 
 # note, this was originally based
@@ -25,24 +26,23 @@ This script writes its output to the stdout.  It is a text-form FST,
 suitable for compilation by fstcompile.
 """)
 
-
-parser.add_argument('--disambig-symbol', type = str, default = "#0",
-                    help = 'Disambiguation symbol (e.g. #0), '
-                    'that is printed on the input side only of backoff '
-                    'arcs (output side would be epsilon)')
-parser.add_argument('arpa_in', type = str,
-                    help = 'The input ARPA file (must not be gzipped)')
-parser.add_argument('allowed_bigrams_in', type = str,
-                    help = "A file containing the list of allowed bigram pairs.  "
-                    "Must include pairs like '<s> foo' and 'foo </s>', as well as "
-                    "pairs like 'foo bar'.")
-parser.add_argument('--verbose', type = int, default = 0,
-                    choices=[0,1,2,3,4,5], help = 'Verbose level')
+parser.add_argument('--disambig-symbol', type=str, default="#0",
+                    help='Disambiguation symbol (e.g. #0), '
+                         'that is printed on the input side only of backoff '
+                         'arcs (output side would be epsilon)')
+parser.add_argument('arpa_in', type=str,
+                    help='The input ARPA file (must not be gzipped)')
+parser.add_argument('allowed_bigrams_in', type=str,
+                    help="A file containing the list of allowed bigram pairs.  "
+                         "Must include pairs like '<s> foo' and 'foo </s>', as well as "
+                         "pairs like 'foo bar'.")
+parser.add_argument('--verbose', type=int, default=0,
+                    choices=[0, 1, 2, 3, 4, 5], help='Verbose level')
 
 args = parser.parse_args()
 
 if args.verbose >= 1:
-    print(' '.join(sys.argv), file = sys.stderr)
+    print(' '.join(sys.argv), file=sys.stderr)
 
 
 class HistoryState(object):
@@ -77,7 +77,7 @@ class ArpaModel(object):
             f = open(arpa_in, "r")
         except:
             sys.exit("{0}: error opening ARPA file {1}".format(
-                     sys.argv[0], arpa_in))
+                sys.argv[0], arpa_in))
         # first read till the \data\ marker.
         while True:
             line = f.readline()
@@ -94,13 +94,12 @@ class ArpaModel(object):
             if line[0:5] != 'ngram':
                 sys.exit("{0}: reading {1}, read something unexpected in header: {2}".format(
                     sys.argv[0], arpa_in, line[:-1]))
-            rest=line[5:]
+            rest = line[5:]
             a = rest.split('=')  # e.g. a = [ '1', '1264] ]
             if len(a) != 2:
                 sys.exit("{0}: reading {1}, read something unexpected in header: {2}".format(
                     sys.argv[0], arpa_in, line[:-1]))
             max_order = int(a[0])
-
 
         for n in range(max_order):
             # self.orders[n], indexed by history-length (length of the
@@ -125,7 +124,7 @@ class ArpaModel(object):
                     sys.exit("{0}: reading {1}, expected line {1}, got {2}".format(arpa_in, expected_line, line[:-1]))
                 if args.verbose >= 2:
                     print("{0}: reading {1}-grams".format(
-                        sys.argv[0], cur_order), file = sys.stderr)
+                        sys.argv[0], cur_order), file=sys.stderr)
 
                 # now read all the n-grams from this order.
                 while True:
@@ -142,19 +141,19 @@ class ArpaModel(object):
                         prob = math.exp(float(a[0]) * log10)
                         hist = tuple(a[1:cur_order])  # tuple of strings
                         word = a[cur_order]  # a string
-                        backoff_prob = math.exp(float(a[cur_order+1]) * log10) if l == cur_order + 2 else None
+                        backoff_prob = math.exp(float(a[cur_order + 1]) * log10) if l == cur_order + 2 else None
                     except Exception as e:
                         sys.exit("{0}: reading {1}: in {2}-grams section, got bad "
                                  "line (exception is: {3}): {4}".format(
-                                     sys.argv[0], arpa_in, cur_order,
-                                     str(type(e)) + ',' + str(e), line[:-1]))
-                    self.orders[cur_order-1][hist].word_to_prob[word] = prob
+                            sys.argv[0], arpa_in, cur_order,
+                            str(type(e)) + ',' + str(e), line[:-1]))
+                    self.orders[cur_order - 1][hist].word_to_prob[word] = prob
                     if backoff_prob != None:
                         self.orders[cur_order][hist + (word,)].backoff_prob = backoff_prob
 
         if args.verbose >= 2:
             print("{0}: read {1}-gram model from {2}".format(
-                sys.argv[0], cur_order, arpa_in), file = sys.stderr)
+                sys.argv[0], cur_order, arpa_in), file=sys.stderr)
         if cur_order < 2:
             # we'd have to have some if-statements in the code to make this work,
             # and I don't want to have to test it.
@@ -194,7 +193,6 @@ class ArpaModel(object):
                 sys.exit("{0}: error processing histories: history-state {1} "
                          "does not exist.".format(sys.argv[0], hist))
             return self.GetStateForHist(hist_to_state, hist[1:])
-
 
     def GetHistToStateMap(self):
         # This function, called from PrintAsFst, returns (hist_to_state,
@@ -243,9 +241,8 @@ class ArpaModel(object):
         # History will map from history (as a tuple) to integer FST-state.
         (hist_to_state, state_to_hist) = self.GetHistToStateMap()
 
-
         # The following 3 things are just for diagnostics.
-        normalization_stats = [ [0, 0.0] for x in range(len(self.orders)) ]
+        normalization_stats = [[0, 0.0] for x in range(len(self.orders))]
         num_ngrams_allowed = 0
         num_ngrams_disallowed = 0
 
@@ -258,7 +255,7 @@ class ArpaModel(object):
                 if not context_word in bigram_map:
                     print("{0}: warning: word {1} appears in ARPA but is not listed "
                           "as a left context in the bigram map".format(
-                              sys.argv[0], context_word), file = sys.stderr)
+                        sys.argv[0], context_word), file=sys.stderr)
                     continue
                 # word list is a list of words that can follow this word.  It must be nonempty.
                 word_list = list(bigram_map[context_word])
@@ -288,7 +285,7 @@ class ArpaModel(object):
 
                 normalization_stats[hist_len][0] += 1
                 normalization_stats[hist_len][1] += \
-                  sum([ self.GetProb(hist, word) for word in bigram_map[most_recent_word]])
+                    sum([self.GetProb(hist, word) for word in bigram_map[most_recent_word]])
 
                 for word, prob in hist_state.word_to_prob.items():
                     cost = -math.log(prob)
@@ -316,7 +313,7 @@ class ArpaModel(object):
                 # note: we only print the disambig symbol on the input side.
                 if args.verbose >= 3 and abs(cost) < 0.001:
                     print("{0}: very low backoff cost {1} for history {2}, state = {3}".format(
-                        sys.argv[0], cost, str(hist), state), file = sys.stderr)
+                        sys.argv[0], cost, str(hist), state), file=sys.stderr)
 
                 # For hist-states that completely back off (they have no words coming out of them),
                 # there is no need to disambiguate, we can print an epsilon that will later be removed.
@@ -329,14 +326,13 @@ class ArpaModel(object):
                 avg_prob_sum = normalization_stats[hist_len][1] / num_states if num_states > 0 else 0.0
                 print("{0}: for {1}-gram states, over {2} states the average sum of "
                       "probs was {3} (would be 1.0 if properly normalized).".format(
-                          sys.argv[0], hist_len + 1, num_states, avg_prob_sum),
-                      file = sys.stderr)
+                    sys.argv[0], hist_len + 1, num_states, avg_prob_sum),
+                    file=sys.stderr)
             if num_ngrams_disallowed != 0:
                 print("{0}: for explicit n-grams higher than bigram from the ARPA model, {0} "
                       "were allowed by the bigram constraints and {1} were disallowed (we "
                       "normally expect all or almost all of them to be allowed).".format(
-                          num_ngrams_allowed, num_ngrams_disallowed), file = sys.stderr)
-
+                    num_ngrams_allowed, num_ngrams_disallowed), file=sys.stderr)
 
 
 # returns a map which is a dict [indexed by left-hand word] of sets [containing
@@ -361,11 +357,11 @@ def ReadBigramMap(bigrams_file):
         if len(a) != 2:
             sys.exit("utils/lang/internal/arpa2fst_constrained.py: bad line in "
                      "bigrams file {0} (expect 2 fields): {1}".format(
-                         bigrams_file, line[:-1]))
+                bigrams_file, line[:-1]))
         [word1, word2] = a
         if word1 in ans and word2 in ans[word1]:
             sys.exit("{0}: bigrams file contained duplicate entry: {1} {2}".format(
-                sys.argv[0], word1, word2), file = sys.stderr)
+                sys.argv[0], word1, word2), file=sys.stderr)
         if word2 == '<s>' or word1 == '</s>':
             sys.exit("{0}: bad sequence of BOS/EOS symbols: {1} {2}".format(
                 sys.argv[0], word1, word2))
@@ -385,6 +381,7 @@ def ReadBigramMap(bigrams_file):
                  "(make sure BOS and EOS symbols are there)".format(
             sys.argv[0], bigrams_file))
     return ans
+
 
 arpa_model = ArpaModel()
 arpa_model.Read(args.arpa_in)

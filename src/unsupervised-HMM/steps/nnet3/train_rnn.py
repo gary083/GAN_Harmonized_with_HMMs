@@ -7,8 +7,9 @@
 """ This script is based on steps/nnet3/lstm/train.sh
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
 import os
@@ -22,7 +23,6 @@ import libs.nnet3.train.common as common_train_lib
 import libs.common as common_lib
 import libs.nnet3.train.frame_level_objf as train_lib
 import libs.nnet3.report.log_parse as nnet3_log_parse
-
 
 logger = logging.getLogger('libs')
 logger.setLevel(logging.INFO)
@@ -90,7 +90,7 @@ def get_args():
     parser.add_argument("--trainer.num-jobs-compute-prior", type=int,
                         dest='num_jobs_compute_prior', default=10,
                         help="The prior computation jobs are single "
-                        "threaded and run on the CPU")
+                             "threaded and run on the CPU")
 
     # Parameters for the optimization
     parser.add_argument("--trainer.optimization.momentum", type=float,
@@ -135,15 +135,15 @@ def get_args():
     # General options
     parser.add_argument("--feat-dir", type=str, required=False,
                         help="Directory with features used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--lang", type=str, required=False,
                         help="Language directory")
     parser.add_argument("--ali-dir", type=str, required=True,
                         help="Directory with alignments used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--dir", type=str, required=True,
                         help="Directory to store the models and "
-                        "all other files.")
+                             "all other files.")
 
     print(' '.join(sys.argv))
     print(sys.argv)
@@ -174,8 +174,8 @@ def process_args(args):
     if (not os.path.exists(args.dir)):
         raise Exception("This script expects --dir={0} to exist.")
 
-    if (not os.path.exists(args.dir+"/configs") and
-        (args.input_model is None or not os.path.exists(args.input_model))):
+    if (not os.path.exists(args.dir + "/configs") and
+            (args.input_model is None or not os.path.exists(args.input_model))):
         raise Exception("Either --trainer.input-model option should be supplied, "
                         "and exist; or the {0}/configs directory should exist."
                         "{0}/configs is the output of make_configs.py"
@@ -323,10 +323,10 @@ def train(args, run_opts):
 
     [egs_left_context, egs_right_context,
      frames_per_eg_str, num_archives] = (
-         common_train_lib.verify_egs_dir(egs_dir, feat_dim,
-                                         ivector_dim, ivector_id,
-                                         left_context, right_context,
-                                         left_context_initial, right_context_final))
+        common_train_lib.verify_egs_dir(egs_dir, feat_dim,
+                                        ivector_dim, ivector_id,
+                                        left_context, right_context,
+                                        left_context_initial, right_context_final))
     if args.chunk_width != frames_per_eg_str:
         raise Exception("mismatch between --egs.chunk-width and the frames_per_eg "
                         "in the egs dir {0} vs {1}".format(args.chunk_width,
@@ -352,7 +352,7 @@ def train(args, run_opts):
         logger.info("Computing initial vector for FixedScaleComponent before"
                     " softmax, using priors^{prior_scale} and rescaling to"
                     " average 1".format(
-                        prior_scale=args.presoftmax_prior_scale_power))
+            prior_scale=args.presoftmax_prior_scale_power))
 
         common_train_lib.compute_presoftmax_prior_scale(
             args.dir, args.ali_dir, num_jobs, run_opts,
@@ -387,7 +387,7 @@ def train(args, run_opts):
     if args.deriv_truncate_margin is not None:
         min_deriv_time = -args.deriv_truncate_margin - model_left_context
         max_deriv_time_relative = \
-           args.deriv_truncate_margin + model_right_context
+            args.deriv_truncate_margin + model_right_context
 
     logger.info("Training will run for {0} epochs = "
                 "{1} iterations".format(args.num_epochs, num_iters))
@@ -402,7 +402,6 @@ def train(args, run_opts):
 
         if args.stage <= iter:
             model_file = "{dir}/{iter}.mdl".format(dir=args.dir, iter=iter)
-
 
             lrate = common_train_lib.get_learning_rate(iter, current_num_jobs,
                                                        num_iters,
@@ -419,8 +418,8 @@ def train(args, run_opts):
             if args.shrink_value < shrinkage_value:
                 shrinkage_value = (args.shrink_value
                                    if common_train_lib.should_do_shrinkage(
-                                           iter, model_file,
-                                           args.shrink_saturation_threshold) else 1.0)
+                    iter, model_file,
+                    args.shrink_saturation_threshold) else 1.0)
 
             percent = num_archives_processed * 100.0 / num_archives_to_process
             epoch = (num_archives_processed * args.num_epochs
@@ -465,7 +464,7 @@ def train(args, run_opts):
                 # do a clean up everythin but the last 2 models, under certain
                 # conditions
                 common_train_lib.remove_model(
-                    args.dir, iter-2, num_iters, models_to_combine,
+                    args.dir, iter - 2, num_iters, models_to_combine,
                     args.preserve_model_interval)
 
             if args.email is not None:
@@ -507,7 +506,7 @@ def train(args, run_opts):
 
         logger.info("Re-adjusting priors based on computed posteriors")
         combined_or_last_numbered_model = "{dir}/{iter}.mdl".format(dir=args.dir,
-                iter=real_iter)
+                                                                    iter=real_iter)
         final_model = "{dir}/final.mdl".format(dir=args.dir)
         train_lib.common.adjust_am_priors(args.dir, combined_or_last_numbered_model,
                                           avg_post_vec_file, final_model,

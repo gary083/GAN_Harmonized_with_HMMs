@@ -1,5 +1,3 @@
-
-
 # Copyright 2016    Vijayaditya Peddinti.
 #           2016    Vimal Manohar
 # Apache 2.0.
@@ -13,7 +11,6 @@ import logging
 import libs.common as common_lib
 import libs.nnet3.train.common as common_train_lib
 
-
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -25,7 +22,6 @@ def generate_egs(data, alidir, egs_dir,
                  online_ivector_dir=None,
                  samples_per_iter=20000, frames_per_eg_str="20", srand=0,
                  egs_opts=None, cmvn_opts=None):
-
     """ Wrapper for calling steps/nnet3/get_egs.sh
 
     Generates targets from alignment directory 'alidir', which contains

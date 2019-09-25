@@ -8,12 +8,13 @@
 raw neural network instead of an acoustic model.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
-import pprint
 import os
+import pprint
 import sys
 import traceback
 
@@ -22,7 +23,6 @@ import libs.nnet3.train.common as common_train_lib
 import libs.common as common_lib
 import libs.nnet3.train.frame_level_objf as train_lib
 import libs.nnet3.report.log_parse as nnet3_log_parse
-
 
 logger = logging.getLogger('libs')
 logger.setLevel(logging.INFO)
@@ -75,7 +75,7 @@ def get_args():
     parser.add_argument("--trainer.num-jobs-compute-prior", type=int,
                         dest='num_jobs_compute_prior', default=10,
                         help="The prior computation jobs are single "
-                        "threaded and run on the CPU")
+                             "threaded and run on the CPU")
 
     # Parameters for the optimization
     parser.add_argument("--trainer.optimization.minibatch-size",
@@ -100,7 +100,7 @@ def get_args():
                         help="Train neural network using dense targets")
     parser.add_argument("--feat-dir", type=str, required=False,
                         help="Directory with features used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--targets-scp", type=str, required=False,
                         help="""Targets for training neural network.
                         This is a kaldi-format SCP file of target matrices.
@@ -112,7 +112,7 @@ def get_args():
                         option is passed to --egs.opts.""")
     parser.add_argument("--dir", type=str, required=True,
                         help="Directory to store the models and "
-                        "all other files.")
+                             "all other files.")
 
     print(' '.join(sys.argv))
     print(sys.argv)
@@ -136,8 +136,8 @@ def process_args(args):
 
     if (not os.path.exists(args.dir)):
         raise Exception("This script expects --dir={0} to exist.")
-    if (not os.path.exists(args.dir+"/configs") and
-        (args.input_model is None or not os.path.exists(args.input_model))):
+    if (not os.path.exists(args.dir + "/configs") and
+            (args.input_model is None or not os.path.exists(args.input_model))):
         raise Exception("Either --trainer.input-model option should be supplied, "
                         "and exist; or the {0}/configs directory should exist."
                         "{0}/configs is the output of make_configs.py"
@@ -226,13 +226,12 @@ def train(args, run_opts):
     left_context = model_left_context
     right_context = model_right_context
 
-
     # Initialize as "raw" nnet, prior to training the LDA-like preconditioning
     # matrix.  This first config just does any initial splicing that we do;
     # we do this as it's a convenient way to get the stats for the 'lda-like'
     # transform.
-    if (args.stage <= -4) and os.path.exists(args.dir+"/configs/init.config") and \
-       (args.input_model is None):
+    if (args.stage <= -4) and os.path.exists(args.dir + "/configs/init.config") and \
+            (args.input_model is None):
         logger.info("Initializing the network for computing the LDA stats")
         common_lib.execute_command(
             """{command} {dir}/log/nnet_init.log \
@@ -265,7 +264,7 @@ def train(args, run_opts):
             except KeyError as e:
                 raise Exception("KeyError {0}: Variables need to be defined "
                                 "in {1}".format(
-                                    str(e), '{0}/configs'.format(args.dir)))
+                    str(e), '{0}/configs'.format(args.dir)))
 
         train_lib.raw_model.generate_egs_using_targets(
             data=args.feat_dir, targets_scp=args.targets_scp,
@@ -289,9 +288,9 @@ def train(args, run_opts):
 
     [egs_left_context, egs_right_context,
      frames_per_eg_str, num_archives] = (
-         common_train_lib.verify_egs_dir(egs_dir, feat_dim,
-                                         ivector_dim, ivector_id,
-                                         left_context, right_context))
+        common_train_lib.verify_egs_dir(egs_dir, feat_dim,
+                                        ivector_dim, ivector_id,
+                                        left_context, right_context))
     assert str(args.frames_per_eg) == frames_per_eg_str
 
     if args.num_jobs_final > num_archives:
@@ -302,8 +301,8 @@ def train(args, run_opts):
     # use during decoding
     common_train_lib.copy_egs_properties_to_exp_dir(egs_dir, args.dir)
 
-    if args.stage <= -2 and os.path.exists(args.dir+"/configs/init.config") and \
-       (args.input_model is None):
+    if args.stage <= -2 and os.path.exists(args.dir + "/configs/init.config") and \
+            (args.input_model is None):
         logger.info('Computing the preconditioning matrix for input features')
 
         train_lib.common.compute_preconditioning_matrix(
@@ -418,7 +417,7 @@ def train(args, run_opts):
                 # do a clean up everything but the last 2 models, under certain
                 # conditions
                 common_train_lib.remove_model(
-                    args.dir, iter-2, num_iters, models_to_combine,
+                    args.dir, iter - 2, num_iters, models_to_combine,
                     args.preserve_model_interval,
                     get_raw_nnet_from_am=False)
 

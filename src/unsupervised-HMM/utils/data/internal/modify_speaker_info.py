@@ -1,22 +1,25 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import argparse, sys,os
+
+import argparse
+import sys
 from collections import defaultdict
+
 parser = argparse.ArgumentParser(description="""
 Combine consecutive utterances into fake speaker ids for a kind of
 poor man's segmentation.  Reads old utt2spk from standard input,
 outputs new utt2spk to standard output.""")
-parser.add_argument("--utts-per-spk-max", type = int, required = True,
+parser.add_argument("--utts-per-spk-max", type=int, required=True,
                     help="Maximum number of utterances allowed per speaker")
-parser.add_argument("--seconds-per-spk-max", type = float, required = True,
+parser.add_argument("--seconds-per-spk-max", type=float, required=True,
                     help="""Maximum duration in seconds allowed per speaker.
                          If this option is >0, --utt2dur option must be provided.""")
-parser.add_argument("--utt2dur", type = str,
+parser.add_argument("--utt2dur", type=str,
                     help="""Filename of input 'utt2dur' file (needed only if
                     --seconds-per-spk-max is provided)""")
-parser.add_argument("--respect-speaker-info", type = str, default = 'true',
-                    choices = ['true', 'false'],
+parser.add_argument("--respect-speaker-info", type=str, default='true',
+                    choices=['true', 'false'],
                     help="""If true, the output speakers will be split from "
                     "existing speakers.""")
 
@@ -34,7 +37,7 @@ while True:
     if len(a) != 2:
         sys.exit("modify_speaker_info.py: bad utt2spk line from standard input (expected two fields): " +
                  line)
-    [ utt, spk ] = a
+    [utt, spk] = a
     utt2spk[utt] = spk
     spk2utt[spk].append(utt)
 
@@ -50,26 +53,27 @@ if args.seconds_per_spk_max > 0:
             if len(a) != 2:
                 sys.exit("modify_speaker_info.py: bad utt2dur line from standard input (expected two fields): " +
                          line)
-            [ utt, dur ] = a
+            [utt, dur] = a
             utt2dur[utt] = float(dur)
         for utt in utt2spk:
             if not utt in utt2dur:
                 sys.exit("modify_speaker_info.py: utterance {0} not in utt2dur file {1}".format(
-                        utt, args.utt2dur))
+                    utt, args.utt2dur))
     except Exception as e:
         sys.exit("modify_speaker_info.py: problem reading utt2dur info: " + str(e))
+
 
 # splits a list of utts into a list of lists, based on constraints from the
 # command line args.  Note: the last list will tend to be shorter than the others,
 # we make no attempt to fix this.
 def SplitIntoGroups(uttlist):
-    ans = [] # list of lists.
+    ans = []  # list of lists.
     cur_uttlist = []
     cur_dur = 0.0
     for utt in uttlist:
         if ((args.utts_per_spk_max > 0 and len(cur_uttlist) == args.utts_per_spk_max) or
-            (args.seconds_per_spk_max > 0 and len(cur_uttlist) > 0 and
-             cur_dur + utt2dur[utt] > args.seconds_per_spk_max)):
+                (args.seconds_per_spk_max > 0 and len(cur_uttlist) > 0 and
+                 cur_dur + utt2dur[utt] > args.seconds_per_spk_max)):
             ans.append(cur_uttlist)
             cur_uttlist = []
             cur_dur = 0.0
@@ -112,4 +116,3 @@ else:
         this_spk = format_string % (i + 1)
         for utt in uttlists[i]:
             print(utt, this_spk)
-

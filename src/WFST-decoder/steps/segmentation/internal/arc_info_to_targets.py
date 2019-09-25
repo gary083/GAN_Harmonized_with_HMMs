@@ -40,22 +40,22 @@ def get_args():
     parser.add_argument("--silence-phones", type=str,
                         required=True,
                         help="File containing a list of phones that will be "
-                        "treated as silence")
+                             "treated as silence")
     parser.add_argument("--garbage-phones", type=str,
                         required=True,
                         help="File containing a list of phones that will be "
-                        "treated as garbage class")
+                             "treated as garbage class")
     parser.add_argument("--max-phone-length", type=int, default=50,
                         help="""Maximum number of frames allowed for a speech
                         phone above which the arc is treated as garbage.""")
 
     parser.add_argument("arc_info", type=str,
                         help="Arc info file (output of lattice-arc-post). "
-                        "See the help for lattice-arc-post for information "
-                        "about the format of this input.")
+                             "See the help for lattice-arc-post for information "
+                             "about the format of this input.")
     parser.add_argument("targets_file", type=str,
                         help="File to write targets matrix archive in text "
-                        "format")
+                             "format")
     args = parser.parse_args()
     return args
 
@@ -77,9 +77,9 @@ def run(args):
             if word in silence_phones:
                 raise RuntimeError("Word '{word}' is in both {silence} "
                                    "and {garbage}".format(
-                                       word=word,
-                                       silence=args.silence_phones,
-                                       garbage=args.garbage_phones))
+                    word=word,
+                    silence=args.silence_phones,
+                    garbage=args.garbage_phones))
             garbage_phones[word] = 1
 
     if len(garbage_phones) == 0:

@@ -5,20 +5,20 @@
 # Apache 2.0.
 
 from __future__ import print_function
+
 import argparse
-import sys, os
+import sys
 from collections import defaultdict
 
-
 parser = argparse.ArgumentParser(description="This script reads stats created in analyze_lats.sh "
-                                 "to print information about lattice depths broken down per phone. "
-                                 "The normal output of this script is written to the standard output "
-                                 "and is human readable (on crashes, we'll print an error to stderr.")
+                                             "to print information about lattice depths broken down per phone. "
+                                             "The normal output of this script is written to the standard output "
+                                             "and is human readable (on crashes, we'll print an error to stderr.")
 
-parser.add_argument("--frequency-cutoff-percentage", type = float,
-                    default = 0.5, help="Cutoff, expressed as a percentage "
-                    "(between 0 and 100), of frequency at which we print stats "
-                    "for a phone.")
+parser.add_argument("--frequency-cutoff-percentage", type=float,
+                    default=0.5, help="Cutoff, expressed as a percentage "
+                                      "(between 0 and 100), of frequency at which we print stats "
+                                      "for a phone.")
 
 parser.add_argument("lang",
                     help="Language directory, e.g. data/lang.")
@@ -30,12 +30,12 @@ phone_int2text = {}
 try:
     f = open(args.lang + "/phones.txt", "r");
     for line in f.readlines():
-        [ word, number] = line.split()
+        [word, number] = line.split()
         phone_int2text[int(number)] = word
     f.close()
 except:
     sys.exit("analyze_lattice_depth_stats.py: error opening or reading {0}/phones.txt".format(
-            args.lang))
+        args.lang))
 # this is a special case... for begin- and end-of-sentence stats,
 # we group all nonsilence phones together.
 phone_int2text[0] = 'nonsilence'
@@ -56,7 +56,7 @@ try:
     f.close()
 except Exception as e:
     sys.exit("analyze_lattice_depth_stats.py: error processing {0}/phones/silence.csl: {1}".format(
-            args.lang, str(e)))
+        args.lang, str(e)))
 
 # phone_depth_counts is a dict of dicts.
 # for each integer phone-id 'phone',
@@ -68,7 +68,7 @@ except Exception as e:
 phone_depth_counts = dict()
 
 # note: -1 is for all phones put in one bucket.
-for p in [ -1 ] + list(phone_int2text.keys()):
+for p in [-1] + list(phone_int2text.keys()):
     phone_depth_counts[p] = defaultdict(int)
 
 total_frames = 0
@@ -81,7 +81,7 @@ while True:
     if len(a) != 3:
         sys.exit("analyze_lattice_depth_stats.py: reading stdin, could not interpret line: " + line)
     try:
-        phone, depth, count = [ int(x) for x in a ]
+        phone, depth, count = [int(x) for x in a]
 
         phone_depth_counts[phone][depth] += count
         total_frames += count
@@ -109,18 +109,19 @@ def GetPercentile(depth_to_count, fraction):
         items = sorted(depth_to_count.items())
         count_cutoff = int(fraction * this_total_frames)
         cur_count_total = 0
-        for depth,count in items:
+        for depth, count in items:
             assert count >= 0
             cur_count_total += count
             if cur_count_total >= count_cutoff:
                 return depth
-        assert false # we shouldn't reach here.
+        assert false  # we shouldn't reach here.
+
 
 def GetMean(depth_to_count):
     this_total_frames = sum(depth_to_count.values())
     if this_total_frames == 0:
         return 0.0
-    this_total_depth = sum([ float(l * c) for l,c in depth_to_count.items() ])
+    this_total_depth = sum([float(l * c) for l, c in depth_to_count.items()])
     return this_total_depth / this_total_frames
 
 
@@ -135,12 +136,11 @@ print("The total amount of data analyzed assuming 100 frames per second "
 
 
 # sort the phones in decreasing order of count.
-for phone,depths in sorted(phone_depth_counts.items(), key = lambda x : -sum(x[1].values())):
+for phone, depths in sorted(phone_depth_counts.items(), key=lambda x: -sum(x[1].values())):
 
     frequency_percentage = sum(depths.values()) * 100.0 / total_frames
     if frequency_percentage < args.frequency_cutoff_percentage:
         continue
-
 
     depth_percentile_10 = GetPercentile(depths, 0.1)
     depth_percentile_50 = GetPercentile(depths, 0.5)
@@ -154,17 +154,17 @@ for phone,depths in sorted(phone_depth_counts.items(), key = lambda x : -sum(x[1
             sys.exit("analyze_lattice_depth_stats.py: phone {0} is not covered on phones.txt "
                      "(lang/alignment mismatch?)".format(phone))
         preamble = "Phone {phone_text} accounts for {percent}% of frames, with".format(
-            phone_text = phone_text, percent = "%.1f" % frequency_percentage)
+            phone_text=phone_text, percent="%.1f" % frequency_percentage)
     elif phone == 0:
         preamble = "Nonsilence phones as a group account for {percent}% of frames, with".format(
-            percent = "%.1f" % frequency_percentage)
+            percent="%.1f" % frequency_percentage)
     else:
         assert phone == -1
         preamble = "Overall,";
 
     print("{preamble} lattice depth (10,50,90-percentile)=({p10},{p50},{p90}) and mean={mean}".format(
-            preamble = preamble,
-            p10 = depth_percentile_10,
-            p50 = depth_percentile_50,
-            p90 = depth_percentile_90,
-            mean = "%.1f" % depth_mean))
+        preamble=preamble,
+        p10=depth_percentile_10,
+        p50=depth_percentile_50,
+        p90=depth_percentile_90,
+        mean="%.1f" % depth_mean))

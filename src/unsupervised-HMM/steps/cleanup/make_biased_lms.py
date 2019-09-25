@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import sys
+
 import argparse
-import math
 import subprocess
-from collections import defaultdict
+import sys
 
 parser = argparse.ArgumentParser(description="""
 This script is a wrapper for make_one_biased_lm.py that reads a Kaldi archive
@@ -15,26 +14,25 @@ grouping utterances to respect the --min-words-per-graph option.  It writes
 the graphs to the standard output and also outputs a map from input utterance-ids
 to the per-group utterance-ids that index the output graphs.""")
 
-parser.add_argument("--lm-opts", type = str, default = "",
-                    help = "Options to pass in to make_one_biased_lm.py (which "
-                    "creates the individual LM graphs), e.g. '--word-disambig-symbol=8721'.")
-parser.add_argument("--min-words-per-graph", type = int, default = 100,
-                    help = "Minimum number of words per utterance group; this program "
-                    "will try to arrange the input utterances into groups such that each "
-                    "one has at least this many words in total.")
-parser.add_argument("utterance_map", type = str,
-                    help = "Filename to which a map from input utterances to grouped "
-                    "utterances, is written")
+parser.add_argument("--lm-opts", type=str, default="",
+                    help="Options to pass in to make_one_biased_lm.py (which "
+                         "creates the individual LM graphs), e.g. '--word-disambig-symbol=8721'.")
+parser.add_argument("--min-words-per-graph", type=int, default=100,
+                    help="Minimum number of words per utterance group; this program "
+                         "will try to arrange the input utterances into groups such that each "
+                         "one has at least this many words in total.")
+parser.add_argument("utterance_map", type=str,
+                    help="Filename to which a map from input utterances to grouped "
+                         "utterances, is written")
 
 args = parser.parse_args()
-
-
 
 try:
     utterance_map_file = open(args.utterance_map, "w")
 except:
     sys.exit("make_biased_lms.py: error opening {0} to write utterance map".format(
-            args.utterance_map))
+        args.utterance_map))
+
 
 # This processes one group of input lines; 'group_of_lines' is
 # an array of lines of input integerized text, e.g.
@@ -54,15 +52,15 @@ def ProcessGroupOfLines(group_of_lines):
 
     try:
         command = "steps/cleanup/internal/make_one_biased_lm.py " + args.lm_opts
-        p = subprocess.Popen(command, shell = True, stdin = subprocess.PIPE,
-                            stdout = sys.stdout, stderr = sys.stderr)
+        p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                             stdout=sys.stdout, stderr=sys.stderr)
         for line in group_of_lines:
             a = line.split()
             if len(a) == 0:
                 sys.exit("make_biased_lms.py: empty input line")
             utterance_id = a[0]
             # print <utt> <utt-group> to utterance-map file
-            print(utterance_id, group_utterance_id, file = utterance_map_file)
+            print(utterance_id, group_utterance_id, file=utterance_map_file)
             rest_of_line = ' '.join(a[1:])  # get rid of utterance id.
             print(rest_of_line, file=p.stdin)
         p.stdin.close()
@@ -76,7 +74,6 @@ def ProcessGroupOfLines(group_of_lines):
     sys.stdout.flush()
 
 
-
 num_words_this_group = 0
 this_group_of_lines = []  # An array of strings, one per line
 
@@ -86,13 +83,12 @@ while True:
     if line != '':
         this_group_of_lines.append(line)
     if num_words_this_group >= args.min_words_per_graph or \
-        (line == '' and len(this_group_of_lines) != 0):
+            (line == '' and len(this_group_of_lines) != 0):
         ProcessGroupOfLines(this_group_of_lines)
         num_words_this_group = 0
         this_group_of_lines = []
     if line == '':
         break
-
 
 # test comand [to be run from ../..]
 #

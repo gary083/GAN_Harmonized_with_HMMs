@@ -41,8 +41,11 @@
 """
 
 from __future__ import print_function
-import os, argparse, sys, random
+
+import argparse
 import logging
+import os
+import sys
 import traceback
 
 sys.path.insert(0, 'steps')
@@ -59,7 +62,6 @@ logger.info('Start generating multilingual examples')
 
 
 def get_args():
-
     parser = argparse.ArgumentParser(
         description=""" This script generates examples for multilingual training
         of neural network by producing 3 sets of primary files
@@ -74,30 +76,29 @@ def get_args():
 
     parser.add_argument("--num-archives", type=int, default=None,
                         help="Number of archives to split the data into. (Note: in reality they are not "
-                        "archives, only scp files, but we use this notation by analogy with the "
-                        "conventional egs-creating script).")
+                             "archives, only scp files, but we use this notation by analogy with the "
+                             "conventional egs-creating script).")
     parser.add_argument("--block-size", type=int, default=512,
                         help="This relates to locality of disk access. 'block-size' is"
-                        "the average number of examples that are read consecutively"
-                        "from each input scp file (and are written in the same order to the output scp files)"
-                        "Smaller values lead to more random disk access (during "
-                        "the nnet3 training process).")
+                             "the average number of examples that are read consecutively"
+                             "from each input scp file (and are written in the same order to the output scp files)"
+                             "Smaller values lead to more random disk access (during "
+                             "the nnet3 training process).")
     parser.add_argument("--egs-prefix", type=str, default="egs.",
                         help="This option can be used to add a prefix to the filenames "
-                        "of the output files. For e.g. "
-                        "if --egs-prefix=combine. , then the files produced "
-                        "by this script will be "
-                        "combine.output.*.ark, combine.weight.*.ark, and combine.*.scp")
+                             "of the output files. For e.g. "
+                             "if --egs-prefix=combine. , then the files produced "
+                             "by this script will be "
+                             "combine.output.*.ark, combine.weight.*.ark, and combine.*.scp")
     parser.add_argument("--lang2weight", type=str,
                         help="Comma-separated list of weights, one per language. "
-                        "The language order is as egs_scp_lists.")
-# now the positional arguments
+                             "The language order is as egs_scp_lists.")
+    # now the positional arguments
     parser.add_argument("egs_scp_lists", nargs='+',
                         help="List of egs.scp files per input language."
-                           "e.g. exp/lang1/egs/egs.scp exp/lang2/egs/egs.scp")
+                             "e.g. exp/lang1/egs/egs.scp exp/lang2/egs/egs.scp")
     parser.add_argument("egs_dir",
                         help="Name of output egs directory e.g. exp/tdnn_multilingual_sp/egs")
-
 
     print(sys.argv, file=sys.stderr)
     args = parser.parse_args()
@@ -135,7 +136,7 @@ def process_multilingual_egs(args):
         lang2weight = [1.0] * num_langs
     else:
         lang2weight = args.lang2weight.split(",")
-        assert(len(lang2weight) == num_langs)
+        assert (len(lang2weight) == num_langs)
 
     if not os.path.exists(os.path.join(args.egs_dir, 'info')):
         os.makedirs(os.path.join(args.egs_dir, 'info'))
@@ -171,7 +172,7 @@ def process_multilingual_egs(args):
 
     num_remaining_egs = tot_num_egs
     lang_to_num_remaining_egs = [n for n in lang_to_num_examples]
-    for archive_index in range(num_archives + 1):  #  +1 is because we write to the last archive in two rounds
+    for archive_index in range(num_archives + 1):  # +1 is because we write to the last archive in two rounds
         num_remaining_archives = num_archives - archive_index
         num_remaining_blocks = num_remaining_egs / args.block_size
 
@@ -186,19 +187,21 @@ def process_multilingual_egs(args):
 
         out_scp_file_handle = open('{0}/{1}{2}.scp'.format(args.egs_dir, args.egs_prefix, archive_index + 1),
                                    'a' if last_round else 'w')
-        eg_to_output_file_handle = open("{0}/{1}output.{2}.ark".format(args.egs_dir, args.egs_prefix, archive_index + 1),
-                                        'a' if last_round else 'w')
-        eg_to_weight_file_handle = open("{0}/{1}weight.{2}.ark".format(args.egs_dir, args.egs_prefix, archive_index + 1),
-                                        'a' if last_round else 'w')
-
+        eg_to_output_file_handle = open(
+            "{0}/{1}output.{2}.ark".format(args.egs_dir, args.egs_prefix, archive_index + 1),
+            'a' if last_round else 'w')
+        eg_to_weight_file_handle = open(
+            "{0}/{1}weight.{2}.ark".format(args.egs_dir, args.egs_prefix, archive_index + 1),
+            'a' if last_round else 'w')
 
         for block_index in range(num_blocks_this_archive):
             # Find the lang with the highest proportion of remaining examples
-            remaining_proportions = [remain / tot for remain, tot in zip(lang_to_num_remaining_egs, lang_to_num_examples)]
+            remaining_proportions = [remain / tot for remain, tot in
+                                     zip(lang_to_num_remaining_egs, lang_to_num_examples)]
             lang_index, max_proportion = max(enumerate(remaining_proportions), key=lambda a: a[1])
 
             # Read 'block_size' examples from the selected lang and write them to the current output scp file:
-            example_lines  = read_lines(in_scp_file_handles[lang_index], args.block_size)
+            example_lines = read_lines(in_scp_file_handles[lang_index], args.block_size)
             for eg_line in example_lines:
                 eg_id = eg_line.split()[0]
                 print(eg_line, file=out_scp_file_handle)

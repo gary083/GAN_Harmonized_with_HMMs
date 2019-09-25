@@ -1,15 +1,14 @@
-
-
 # Copyright 2016    Vijayaditya Peddinti
 #                   Vimal Manohar
 # Apache 2.0.
 
 from __future__ import division
 from __future__ import print_function
-import traceback
+
 import datetime
 import logging
 import re
+import traceback
 
 import libs.common as common_lib
 
@@ -17,45 +16,48 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 g_lstmp_nonlin_regex_pattern = ''.join([".*progress.([0-9]+).log:component name=(.+) ",
-    "type=(.*)Component,.*",
-    "i_t_sigmoid.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "f_t_sigmoid.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "c_t_tanh.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "o_t_sigmoid.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "m_t_tanh.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
+                                        "type=(.*)Component,.*",
+                                        "i_t_sigmoid.*",
+                                        "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "f_t_sigmoid.*",
+                                        "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "c_t_tanh.*",
+                                        "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "o_t_sigmoid.*",
+                                        "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "m_t_tanh.*",
+                                        "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                        "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
 
 g_normal_nonlin_regex_pattern = ''.join([".*progress.([0-9]+).log:component name=(.+) ",
-    "type=(.*)Component,.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
+                                         "type=(.*)Component,.*",
+                                         "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                         "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
 
 g_normal_nonlin_regex_pattern_with_oderiv = ''.join([".*progress.([0-9]+).log:component name=(.+) ",
-    "type=(.*)Component,.*",
-    "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
-    "oderiv-rms=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
+                                                     "type=(.*)Component,.*",
+                                                     "value-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                                     "deriv-avg=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\].*",
+                                                     "oderiv-rms=\[.*=\((.+)\), mean=([0-9\.\-e]+), stddev=([0-9\.e\-]+)\]"])
+
 
 class KaldiLogParseException(Exception):
     """ An Exception class that throws an error when there is an issue in
     parsing the log files. Extend this class if more granularity is needed.
     """
-    def __init__(self, message = None):
+
+    def __init__(self, message=None):
         if message is not None and message.strip() == "":
             message = None
 
         Exception.__init__(self,
                            "There was an error while trying to parse the logs."
                            " Details : \n{0}\n".format(message))
+
 
 # This function is used to fill stats_per_component_per_iter table with the
 # results of regular expression.
@@ -65,19 +67,19 @@ def fill_nonlin_stats_table_with_regex_result(groups, gate_index, stats_table):
     component_name = groups[1]
     component_type = groups[2]
     # for value-avg
-    value_percentiles = groups[3+gate_index*6]
-    value_mean = float(groups[4+gate_index*6])
-    value_stddev = float(groups[5+gate_index*6])
-    value_percentiles_split = re.split(',| ',value_percentiles)
+    value_percentiles = groups[3 + gate_index * 6]
+    value_mean = float(groups[4 + gate_index * 6])
+    value_stddev = float(groups[5 + gate_index * 6])
+    value_percentiles_split = re.split(',| ', value_percentiles)
     assert len(value_percentiles_split) == 13
     value_5th = float(value_percentiles_split[4])
     value_50th = float(value_percentiles_split[6])
     value_95th = float(value_percentiles_split[9])
     # for deriv-avg
-    deriv_percentiles = groups[6+gate_index*6]
-    deriv_mean = float(groups[7+gate_index*6])
-    deriv_stddev = float(groups[8+gate_index*6])
-    deriv_percentiles_split = re.split(',| ',deriv_percentiles)
+    deriv_percentiles = groups[6 + gate_index * 6]
+    deriv_mean = float(groups[7 + gate_index * 6])
+    deriv_stddev = float(groups[8 + gate_index * 6])
+    deriv_percentiles_split = re.split(',| ', deriv_percentiles)
     assert len(deriv_percentiles_split) == 13
     deriv_5th = float(deriv_percentiles_split[4])
     deriv_50th = float(deriv_percentiles_split[6])
@@ -87,31 +89,31 @@ def fill_nonlin_stats_table_with_regex_result(groups, gate_index, stats_table):
         try:
             if stats_table[component_name]['stats'].has_key(iteration):
                 stats_table[component_name]['stats'][iteration].extend(
-                        [value_mean,  value_stddev,
-                         deriv_mean,  deriv_stddev,
-                         value_5th,  value_50th,  value_95th,
-                         deriv_5th,  deriv_50th,  deriv_95th])
+                    [value_mean, value_stddev,
+                     deriv_mean, deriv_stddev,
+                     value_5th, value_50th, value_95th,
+                     deriv_5th, deriv_50th, deriv_95th])
             else:
                 stats_table[component_name]['stats'][iteration] = [
-                        value_mean,  value_stddev,
-                        deriv_mean,  deriv_stddev,
-                        value_5th,  value_50th,  value_95th,
-                        deriv_5th,  deriv_50th,  deriv_95th]
+                    value_mean, value_stddev,
+                    deriv_mean, deriv_stddev,
+                    value_5th, value_50th, value_95th,
+                    deriv_5th, deriv_50th, deriv_95th]
         except KeyError:
             stats_table[component_name] = {}
             stats_table[component_name]['type'] = component_type
             stats_table[component_name]['stats'] = {}
             stats_table[component_name][
-                    'stats'][iteration] = [value_mean,  value_stddev,
-                                           deriv_mean,  deriv_stddev,
-                                           value_5th,  value_50th,  value_95th,
-                                           deriv_5th,  deriv_50th,  deriv_95th]
+                'stats'][iteration] = [value_mean, value_stddev,
+                                       deriv_mean, deriv_stddev,
+                                       value_5th, value_50th, value_95th,
+                                       deriv_5th, deriv_50th, deriv_95th]
     else:
-        #for oderiv-rms
-        oderiv_percentiles = groups[9+gate_index*6]
-        oderiv_mean = float(groups[10+gate_index*6])
-        oderiv_stddev = float(groups[11+gate_index*6])
-        oderiv_percentiles_split = re.split(',| ',oderiv_percentiles)
+        # for oderiv-rms
+        oderiv_percentiles = groups[9 + gate_index * 6]
+        oderiv_mean = float(groups[10 + gate_index * 6])
+        oderiv_stddev = float(groups[11 + gate_index * 6])
+        oderiv_percentiles_split = re.split(',| ', oderiv_percentiles)
         assert len(oderiv_percentiles_split) == 13
         oderiv_5th = float(oderiv_percentiles_split[4])
         oderiv_50th = float(oderiv_percentiles_split[6])
@@ -119,34 +121,34 @@ def fill_nonlin_stats_table_with_regex_result(groups, gate_index, stats_table):
         try:
             if stats_table[component_name]['stats'].has_key(iteration):
                 stats_table[component_name]['stats'][iteration].extend(
-                        [value_mean,  value_stddev,
-                         deriv_mean,  deriv_stddev,
-                         oderiv_mean, oderiv_stddev,
-                         value_5th,  value_50th,  value_95th,
-                         deriv_5th,  deriv_50th,  deriv_95th,
-                         oderiv_5th, oderiv_50th, oderiv_95th])
+                    [value_mean, value_stddev,
+                     deriv_mean, deriv_stddev,
+                     oderiv_mean, oderiv_stddev,
+                     value_5th, value_50th, value_95th,
+                     deriv_5th, deriv_50th, deriv_95th,
+                     oderiv_5th, oderiv_50th, oderiv_95th])
             else:
                 stats_table[component_name]['stats'][iteration] = [
-                        value_mean,  value_stddev,
-                        deriv_mean,  deriv_stddev,
-                        oderiv_mean, oderiv_stddev,
-                        value_5th,  value_50th,  value_95th,
-                        deriv_5th,  deriv_50th,  deriv_95th,
-                        oderiv_5th, oderiv_50th, oderiv_95th]
+                    value_mean, value_stddev,
+                    deriv_mean, deriv_stddev,
+                    oderiv_mean, oderiv_stddev,
+                    value_5th, value_50th, value_95th,
+                    deriv_5th, deriv_50th, deriv_95th,
+                    oderiv_5th, oderiv_50th, oderiv_95th]
         except KeyError:
             stats_table[component_name] = {}
             stats_table[component_name]['type'] = component_type
             stats_table[component_name]['stats'] = {}
             stats_table[component_name][
-                    'stats'][iteration] = [value_mean,  value_stddev,
-                                           deriv_mean,  deriv_stddev,
-                                           oderiv_mean, oderiv_stddev,
-                                           value_5th,  value_50th,  value_95th,
-                                           deriv_5th,  deriv_50th,  deriv_95th,
-                                           oderiv_5th, oderiv_50th, oderiv_95th]
+                'stats'][iteration] = [value_mean, value_stddev,
+                                       deriv_mean, deriv_stddev,
+                                       oderiv_mean, oderiv_stddev,
+                                       value_5th, value_50th, value_95th,
+                                       deriv_5th, deriv_50th, deriv_95th,
+                                       oderiv_5th, oderiv_50th, oderiv_95th]
+
 
 def parse_progress_logs_for_nonlinearity_stats(exp_dir):
-
     """ Parse progress logs for mean and std stats for non-linearities.
     e.g. for a line that is parsed from progress.*.log:
     exp/nnet3/lstm_self_repair_ld5_sp/log/progress.9.log:component name=Lstm3_i
@@ -164,7 +166,7 @@ def parse_progress_logs_for_nonlinearity_stats(exp_dir):
 
     progress_log_lines = common_lib.get_command_stdout(
         'grep -e "value-avg.*deriv-avg.*oderiv" {0}'.format(progress_log_files),
-        require_zero_status = False)
+        require_zero_status=False)
 
     if progress_log_lines:
         # cases with oderiv-rms
@@ -172,8 +174,8 @@ def parse_progress_logs_for_nonlinearity_stats(exp_dir):
     else:
         # cases with only value-avg and deriv-avg
         progress_log_lines = common_lib.get_command_stdout(
-        'grep -e "value-avg.*deriv-avg" {0}'.format(progress_log_files),
-        require_zero_status = False)
+            'grep -e "value-avg.*deriv-avg" {0}'.format(progress_log_files),
+            require_zero_status=False)
         parse_regex = re.compile(g_normal_nonlin_regex_pattern)
 
     for line in progress_log_lines.split("\n"):
@@ -189,12 +191,12 @@ def parse_progress_logs_for_nonlinearity_stats(exp_dir):
             mat_obj = parse_regex_lstmp.search(line)
             groups = mat_obj.groups()
             assert len(groups) == 33
-            for i in list(range(0,5)):
+            for i in list(range(0, 5)):
                 fill_nonlin_stats_table_with_regex_result(groups, i,
-                        stats_per_component_per_iter)
+                                                          stats_per_component_per_iter)
         else:
             fill_nonlin_stats_table_with_regex_result(groups, 0,
-                    stats_per_component_per_iter)
+                                                      stats_per_component_per_iter)
     return stats_per_component_per_iter
 
 
@@ -265,8 +267,8 @@ def parse_progress_logs_for_clipped_proportion(exp_dir):
     for component_name in component_names:
         cp_per_iter_per_component[component_name] = []
     data = []
-    data.append(["iteration"]+component_names)
-    for iter in range(max_iteration+1):
+    data.append(["iteration"] + component_names)
+    for iter in range(max_iteration + 1):
         if iter not in cp_per_component_per_iter:
             continue
         comp_dict = cp_per_component_per_iter[iter]
@@ -351,11 +353,11 @@ def parse_progress_logs_for_param_diff(exp_dir, pattern):
                 # the component was not found this iteration, may be because of
                 # layerwise discriminative training
                 pass
-        if (total_missing_iterations/len(component_names) > 20
+        if (total_missing_iterations / len(component_names) > 20
                 and not gave_user_warning and logger is not None):
             logger.warning("There are more than {0} missing iterations per "
                            "component. Something might be wrong.".format(
-                                total_missing_iterations/len(component_names)))
+                total_missing_iterations / len(component_names)))
             gave_user_warning = True
 
     return {'progress_per_component': progress_per_component,
@@ -367,7 +369,7 @@ def get_train_times(exp_dir):
     train_log_files = "%s/log/" % (exp_dir)
     train_log_names = "train.*.log"
     train_log_lines = common_lib.get_command_stdout(
-        'find {0} -name "{1}" | xargs grep -H -e Accounting'.format(train_log_files,train_log_names))
+        'find {0} -name "{1}" | xargs grep -H -e Accounting'.format(train_log_files, train_log_names))
     parse_regex = re.compile(".*train\.([0-9]+)\.([0-9]+)\.log:# "
                              "Accounting: time=([0-9]+) thread.*")
 
@@ -386,6 +388,7 @@ def get_train_times(exp_dir):
         values = train_times[iter].values()
         train_times[iter] = max(values)
     return train_times
+
 
 def parse_prob_logs(exp_dir, key='accuracy', output="output"):
     train_prob_files = "%s/log/compute_prob_train.*.log" % (exp_dir)
@@ -422,7 +425,7 @@ def parse_prob_logs(exp_dir, key='accuracy', output="output"):
                 train_objf[int(groups[0])] = groups[2]
     if not train_objf:
         raise KaldiLogParseException("Could not find any lines with {k} in "
-                " {l}".format(k=key, l=train_prob_files))
+                                     " {l}".format(k=key, l=train_prob_files))
 
     for line in valid_prob_strings.split('\n'):
         mat_obj = parse_regex.search(line)
@@ -433,16 +436,17 @@ def parse_prob_logs(exp_dir, key='accuracy', output="output"):
 
     if not valid_objf:
         raise KaldiLogParseException("Could not find any lines with {k} in "
-                " {l}".format(k=key, l=valid_prob_files))
+                                     " {l}".format(k=key, l=valid_prob_files))
 
     iters = list(set(valid_objf.keys()).intersection(train_objf.keys()))
     if not iters:
         raise KaldiLogParseException("Could not any common iterations with"
-                " key {k} in both {tl} and {vl}".format(
-                    k=key, tl=train_prob_files, vl=valid_prob_files))
+                                     " key {k} in both {tl} and {vl}".format(
+            k=key, tl=train_prob_files, vl=valid_prob_files))
     iters.sort()
     return list(map(lambda x: (int(x), float(train_objf[x]),
                                float(valid_objf[x])), iters))
+
 
 def parse_rnnlm_prob_logs(exp_dir, key='objf'):
     train_prob_files = "%s/log/train.*.*.log" % (exp_dir)
@@ -485,7 +489,7 @@ def parse_rnnlm_prob_logs(exp_dir, key='objf'):
                 train_objf[int(groups[0])] = groups[2]
     if not train_objf:
         raise KaldiLogParseException("Could not find any lines with {k} in "
-                " {l}".format(k=key, l=train_prob_files))
+                                     " {l}".format(k=key, l=train_prob_files))
 
     for line in valid_prob_strings.split('\n'):
         mat_obj = parse_regex_valid.search(line)
@@ -496,17 +500,16 @@ def parse_rnnlm_prob_logs(exp_dir, key='objf'):
 
     if not valid_objf:
         raise KaldiLogParseException("Could not find any lines with {k} in "
-                " {l}".format(k=key, l=valid_prob_files))
+                                     " {l}".format(k=key, l=valid_prob_files))
 
     iters = list(set(valid_objf.keys()).intersection(train_objf.keys()))
     if not iters:
         raise KaldiLogParseException("Could not any common iterations with"
-                " key {k} in both {tl} and {vl}".format(
-                    k=key, tl=train_prob_files, vl=valid_prob_files))
+                                     " key {k} in both {tl} and {vl}".format(
+            k=key, tl=train_prob_files, vl=valid_prob_files))
     iters.sort()
     return map(lambda x: (int(x), float(train_objf[x]),
                           float(valid_objf[x])), iters)
-
 
 
 def generate_acc_logprob_report(exp_dir, key="accuracy", output="output"):
@@ -531,7 +534,7 @@ def generate_acc_logprob_report(exp_dir, key="accuracy", output="output"):
     for x in data:
         try:
             report.append("%d\t%s\t%g\t%g\t%g" % (x[0], str(times[x[0]]),
-                                                  x[1], x[2], x[2]-x[1]))
+                                                  x[1], x[2], x[2] - x[1]))
         except KeyError, IndexError:
             continue
 
@@ -539,5 +542,5 @@ def generate_acc_logprob_report(exp_dir, key="accuracy", output="output"):
     for iter in times.keys():
         total_time += times[iter]
     report.append("Total training time is {0}\n".format(
-                    str(datetime.timedelta(seconds=total_time))))
+        str(datetime.timedelta(seconds=total_time))))
     return ["\n".join(report), times, data]

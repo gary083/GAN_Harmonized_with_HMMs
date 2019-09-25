@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import re
-import os
-import argparse
-import sys
-import warnings
-import copy
-import glob
 
+import argparse
+import re
+import sys
 
 if __name__ == "__main__":
     # we add compulsory arguments as named arguments for readability
@@ -18,8 +14,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--difference-threshold", type=float,
                         help="The threshold for discarding models, "
-                        "when objf of the model differs more than this value from the best model "
-                        "it is discarded.",
+                             "when objf of the model differs more than this value from the best model "
+                             "it is discarded.",
                         default=1.0)
 
     parser.add_argument("num_models", type=int,
@@ -27,15 +23,15 @@ if __name__ == "__main__":
 
     parser.add_argument("logfile_pattern", type=str,
                         help="Pattern for identifying the log-file names. "
-                        "It specifies the entire log file name, except for the job number, "
-                        "which is replaced with '%'. e.g. exp/nneet3/tdnn_sp/log/train.4.%.log")
-
+                             "It specifies the entire log file name, except for the job number, "
+                             "which is replaced with '%'. e.g. exp/nneet3/tdnn_sp/log/train.4.%.log")
 
     args = parser.parse_args()
 
-    assert(args.num_models > 0)
+    assert (args.num_models > 0)
 
-    parse_regex = re.compile("LOG .* Overall average objective function for 'output' is ([0-9e.\-+]+) over ([0-9e.\-+]+) frames")
+    parse_regex = re.compile(
+        "LOG .* Overall average objective function for 'output' is ([0-9e.\-+]+) over ([0-9e.\-+]+) frames")
     loss = []
     for i in range(args.num_models):
         model_num = i + 1
@@ -45,7 +41,7 @@ if __name__ == "__main__":
         for line_num in range(1, len(lines) + 1):
             # we search from the end as this would result in
             # lesser number of regex searches. Python regex is slow !
-            mat_obj = parse_regex.search(lines[-1*line_num])
+            mat_obj = parse_regex.search(lines[-1 * line_num])
             if mat_obj is not None:
                 this_loss = float(mat_obj.groups()[0])
                 break;
@@ -54,11 +50,12 @@ if __name__ == "__main__":
     accepted_models = []
     for i in range(args.num_models):
         if (loss[max_index] - loss[i]) <= args.difference_threshold:
-            accepted_models.append(i+1)
+            accepted_models.append(i + 1)
 
     model_list = " ".join([str(x) for x in accepted_models])
     print(model_list)
 
     if len(accepted_models) != args.num_models:
-        print("WARNING: Only {0}/{1} of the models have been accepted for averaging, based on log files {2}.".format(len(accepted_models), args.num_models, args.logfile_pattern), file=sys.stderr)
+        print("WARNING: Only {0}/{1} of the models have been accepted for averaging, based on log files {2}.".format(
+            len(accepted_models), args.num_models, args.logfile_pattern), file=sys.stderr)
         print("         Using models {0}".format(model_list), file=sys.stderr)

@@ -5,12 +5,13 @@
 """ This module has the implementation of attention layers.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import math
-import re
-import sys
+
 from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
+
 
 # This class is for parsing lines like
 #  'attention-renorm-layer num-heads=10 value-dim=50 key-dim=50 time-stride=3 num-left-inputs=5 num-right-inputs=2.'
@@ -25,7 +26,7 @@ from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
 
 
 class XconfigAttentionLayer(XconfigLayerBase):
-    def __init__(self, first_token, key_to_value, prev_names = None):
+    def __init__(self, first_token, key_to_value, prev_names=None):
         # Here we just list some likely combinations.. you can just add any
         # combinations you want to use, to this list.
         assert first_token in ['attention-renorm-layer',
@@ -37,27 +38,27 @@ class XconfigAttentionLayer(XconfigLayerBase):
     def set_default_configs(self):
         # note: self.config['input'] is a descriptor, '[-1]' means output
         # the most recent layer.
-        self.config = { 'input':'[-1]',
-                        'dim': -1,
-                        'max-change' : 0.75,
-                        'self-repair-scale' : 1.0e-05,
-                        'target-rms' : 1.0,
-                        'learning-rate-factor' : 1.0,
-                        'ng-affine-options' : '',
-                        'l2-regularize': 0.0,
-                        'num-left-inputs-required': -1,
-                        'num-right-inputs-required': -1,
-                        'output-context': True,
-                        'time-stride': 1,
-                        'num-heads': 1,
-                        'key-dim': -1,
-                        'key-scale': 0.0,
-                        'value-dim': -1,
-                        'num-left-inputs': -1,
-                        'num-right-inputs': -1,
-                        'dropout-proportion': 0.5}  # dropout-proportion only
-                                                    # affects layers with
-                                                    # 'dropout' in the name.
+        self.config = {'input': '[-1]',
+                       'dim': -1,
+                       'max-change': 0.75,
+                       'self-repair-scale': 1.0e-05,
+                       'target-rms': 1.0,
+                       'learning-rate-factor': 1.0,
+                       'ng-affine-options': '',
+                       'l2-regularize': 0.0,
+                       'num-left-inputs-required': -1,
+                       'num-right-inputs-required': -1,
+                       'output-context': True,
+                       'time-stride': 1,
+                       'num-heads': 1,
+                       'key-dim': -1,
+                       'key-scale': 0.0,
+                       'value-dim': -1,
+                       'num-left-inputs': -1,
+                       'num-right-inputs': -1,
+                       'dropout-proportion': 0.5}  # dropout-proportion only
+        # affects layers with
+        # 'dropout' in the name.
 
     def check_configs(self):
         if self.config['self-repair-scale'] < 0.0 or self.config['self-repair-scale'] > 1.0:
@@ -106,8 +107,8 @@ class XconfigAttentionLayer(XconfigLayerBase):
                 (value_dim +
                  (context_dim if self.config['output-context'] else 0)))
 
-    def output_dim(self, auxiliary_output = None):
-      return self.attention_output_dim()
+    def output_dim(self, auxiliary_output=None):
+        return self.attention_output_dim()
 
     def get_full_config(self):
         ans = []
@@ -119,7 +120,6 @@ class XconfigAttentionLayer(XconfigLayerBase):
                 # so 'ref' and 'final' configs are the same.
                 ans.append((config_name, line))
         return ans
-
 
     def _generate_config(self):
         split_layer_name = self.layer_type.split('-')
@@ -143,9 +143,9 @@ class XconfigAttentionLayer(XconfigLayerBase):
         max_change = self.config['max-change']
         ng_affine_options = self.config['ng-affine-options']
         l2_regularize = self.config['l2-regularize']
-        learning_rate_factor=self.config['learning-rate-factor']
-        learning_rate_option=('learning-rate-factor={0}'.format(learning_rate_factor)
-                              if learning_rate_factor != 1.0 else '')
+        learning_rate_factor = self.config['learning-rate-factor']
+        learning_rate_option = ('learning-rate-factor={0}'.format(learning_rate_factor)
+                                if learning_rate_factor != 1.0 else '')
         l2_regularize_option = ('l2-regularize={0} '.format(l2_regularize)
                                 if l2_regularize != 0.0 else '')
         configs = []
@@ -173,7 +173,7 @@ class XconfigAttentionLayer(XconfigLayerBase):
                         ' type=RectifiedLinearComponent dim={2}'
                         ' self-repair-scale={3}'
                         ''.format(self.name, nonlinearity, dim,
-                            self_repair_scale))
+                                  self_repair_scale))
 
             elif nonlinearity == 'attention':
                 line = ('component name={0}.{1}'
@@ -206,34 +206,34 @@ class XconfigAttentionLayer(XconfigLayerBase):
                         ' type=SigmoidComponent dim={2}'
                         ' self-repair-scale={3}'
                         ''.format(self.name, nonlinearity, dim,
-                            self_repair_scale))
+                                  self_repair_scale))
 
             elif nonlinearity == 'tanh':
                 line = ('component name={0}.{1}'
                         ' type=TanhComponent dim={2}'
                         ' self-repair-scale={3}'
                         ''.format(self.name, nonlinearity, dim,
-                            self_repair_scale))
+                                  self_repair_scale))
 
             elif nonlinearity == 'renorm':
                 line = ('component name={0}.{1}'
                         ' type=NormalizeComponent dim={2}'
                         ' target-rms={3}'
                         ''.format(self.name, nonlinearity, dim,
-                            target_rms))
+                                  target_rms))
 
             elif nonlinearity == 'batchnorm':
                 line = ('component name={0}.{1}'
                         ' type=BatchNormComponent dim={2}'
                         ' target-rms={3}'
                         ''.format(self.name, nonlinearity, dim,
-                            target_rms))
+                                  target_rms))
 
             elif nonlinearity == 'dropout':
                 line = ('component name={0}.{1} type=DropoutComponent '
-                           'dim={2} dropout-proportion={3}'.format(
-                               self.name, nonlinearity, dim,
-                               self.config['dropout-proportion']))
+                        'dim={2} dropout-proportion={3}'.format(
+                    self.name, nonlinearity, dim,
+                    self.config['dropout-proportion']))
 
             else:
                 raise RuntimeError("Unknown nonlinearity type: {0}"

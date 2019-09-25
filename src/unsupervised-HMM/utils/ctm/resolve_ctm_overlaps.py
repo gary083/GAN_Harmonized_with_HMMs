@@ -16,12 +16,11 @@ the last 2.5s of the first utterance i.e. from 27.5s to 30s is truncated
 and the first 2.5s of the second utterance i.e. from 25s to 27.s is truncated.
 """
 
-from __future__ import print_function
 from __future__ import division
-import argparse
-import collections
-import logging
+from __future__ import print_function
 
+import argparse
+import logging
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -232,7 +231,7 @@ def resolve_overlaps(ctms, segments):
             try:
                 index = next(
                     (i for i, line in enumerate(ctm_for_next_utt)
-                    if line[2] + line[3] / 2.0 > overlap / 2.0))
+                     if line[2] + line[3] / 2.0 > overlap / 2.0))
             except StopIteration:
                 # This can happen if there is no word hypothesized after
                 # half the overlap region.

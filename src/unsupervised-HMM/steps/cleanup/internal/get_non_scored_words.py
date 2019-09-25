@@ -5,13 +5,10 @@
 # Apache 2.0
 
 from __future__ import print_function
+
 import argparse
 import logging
-import operator
 import os
-import sys
-from collections import defaultdict
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -30,19 +27,19 @@ logger.addHandler(handler)
 # It then uses the words.txt to work out the written form of those words.
 
 parser = argparse.ArgumentParser(
-    description = "This program works out a reasonable guess at a list of "
-    "non-scored words (words that won't affect the WER evaluation): "
-    "things like [COUGH], [NOISE] and so on.  This is useful because a list of "
-    "such words is required by some other scripts (e.g. modify_ctm_edits.py), "
-    "and it's inconvenient to have to specify the list manually for each language. "
-    "This program writes out the words in text form, one per line.")
+    description="This program works out a reasonable guess at a list of "
+                "non-scored words (words that won't affect the WER evaluation): "
+                "things like [COUGH], [NOISE] and so on.  This is useful because a list of "
+                "such words is required by some other scripts (e.g. modify_ctm_edits.py), "
+                "and it's inconvenient to have to specify the list manually for each language. "
+                "This program writes out the words in text form, one per line.")
 
-parser.add_argument("lang", type = str,
-                    help = "The lang/ directory.  This program expects "
-                    "lang/words.txt and lang/phones/silence.int and "
-                    "lang/phones/align_lexicon.int to exist, and will use them to work "
-                    "out a reasonable guess of the non-scored words  (as those whose "
-                    "pronunciations are a single phone in the 'silphones' list)")
+parser.add_argument("lang", type=str,
+                    help="The lang/ directory.  This program expects "
+                         "lang/words.txt and lang/phones/silence.int and "
+                         "lang/phones/align_lexicon.int to exist, and will use them to work "
+                         "out a reasonable guess of the non-scored words  (as those whose "
+                         "pronunciations are a single phone in the 'silphones' list)")
 
 args = parser.parse_args()
 
@@ -57,7 +54,7 @@ def read_lang(lang_dir):
                      "exist.", lang_dir)
         raise RuntimeError
 
-    for f in [ '/words.txt', '/phones/silence.int', '/phones/align_lexicon.int' ]:
+    for f in ['/words.txt', '/phones/silence.int', '/phones/align_lexicon.int']:
         if not os.path.exists(lang_dir + f):
             logger.error("expected file %s%s to exist.", lang_dir, f)
             raise RuntimeError
@@ -91,7 +88,7 @@ def read_lang(lang_dir):
 
     try:
         for line in open(lang_dir + '/words.txt').readlines():
-            [ word, integer ] = line.split()
+            [word, integer] = line.split()
             if int(integer) in silence_word_ints:
                 non_scored_words.add(word)
     except Exception:

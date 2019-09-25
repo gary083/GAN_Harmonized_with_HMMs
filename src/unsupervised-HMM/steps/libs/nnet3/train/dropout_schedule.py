@@ -12,8 +12,8 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-
 _debug_dropout = False
+
 
 def _parse_dropout_option(dropout_option):
     """Parses the string option to --trainer.dropout-schedule and
@@ -260,49 +260,49 @@ def _self_test():
             assert abs(list1[i][1] - list2[i][1]) < 1e-8
 
     assert (_parse_dropout_option('*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0')
-            == [ ('*', [ (1.0, 0.0), (0.5, 0.5), (0.0, 0.0) ]),
-                 ('lstm.*', [ (1.0, 0.0), (0.75, 0.3), (0.0, 0.0) ]) ])
+            == [('*', [(1.0, 0.0), (0.5, 0.5), (0.0, 0.0)]),
+                ('lstm.*', [(1.0, 0.0), (0.75, 0.3), (0.0, 0.0)])])
     assert_approx_equal(_get_dropout_proportions(
-                           '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.75),
-                        [ ('*', 0.25), ('lstm.*', 0.3) ])
+        '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.75),
+        [('*', 0.25), ('lstm.*', 0.3)])
     assert_approx_equal(_get_dropout_proportions(
-                            '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.5),
-                        [ ('*', 0.5), ('lstm.*', 0.2) ])
+        '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.5),
+        [('*', 0.5), ('lstm.*', 0.2)])
     assert_approx_equal(_get_dropout_proportions(
-                            '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.25),
-                        [ ('*', 0.25), ('lstm.*', 0.1) ])
+        '*=0.0,0.5,0.0 lstm.*=0.0,0.3@0.75,0.0', 0.25),
+        [('*', 0.25), ('lstm.*', 0.1)])
 
     assert (_parse_dropout_option('0.0,0.3,0.0')
-            == [ ('*', [ (1.0, 0.0), (0.5, 0.3), (0.0, 0.0) ]) ])
+            == [('*', [(1.0, 0.0), (0.5, 0.3), (0.0, 0.0)])])
     assert_approx_equal(_get_dropout_proportions('0.0,0.3,0.0', 0.5),
-                        [ ('*', 0.3) ])
+                        [('*', 0.3)])
     assert_approx_equal(_get_dropout_proportions('0.0,0.3,0.0', 0.0),
-                        [ ('*', 0.0) ])
+                        [('*', 0.0)])
     assert_approx_equal(_get_dropout_proportions('0.0,0.3,0.0', 1.0),
-                        [ ('*', 0.0) ])
+                        [('*', 0.0)])
     assert_approx_equal(_get_dropout_proportions('0.0,0.3,0.0', 0.25),
-                        [ ('*', 0.15) ])
+                        [('*', 0.15)])
 
     assert (_parse_dropout_option('0.0,0.5@0.25,0.0,0.6@0.75,0.0')
-            == [ ('*', [ (1.0, 0.0), (0.75, 0.6), (0.5, 0.0), (0.25, 0.5), (0.0, 0.0) ]) ])
+            == [('*', [(1.0, 0.0), (0.75, 0.6), (0.5, 0.0), (0.25, 0.5), (0.0, 0.0)])])
     assert_approx_equal(_get_dropout_proportions(
-                            '0.0,0.5@0.25,0.0,0.6@0.75,0.0', 0.25),
-                        [ ('*', 0.5) ])
+        '0.0,0.5@0.25,0.0,0.6@0.75,0.0', 0.25),
+        [('*', 0.5)])
     assert_approx_equal(_get_dropout_proportions(
-                            '0.0,0.5@0.25,0.0,0.6@0.75,0.0', 0.1),
-                        [ ('*', 0.2) ])
+        '0.0,0.5@0.25,0.0,0.6@0.75,0.0', 0.1),
+        [('*', 0.2)])
 
     assert (_parse_dropout_option('lstm.*=0.0,0.3,0.0@0.75,1.0')
-            == [ ('lstm.*', [ (1.0, 1.0), (0.75, 0.0), (0.5, 0.3), (0.0, 0.0) ]) ])
+            == [('lstm.*', [(1.0, 1.0), (0.75, 0.0), (0.5, 0.3), (0.0, 0.0)])])
     assert_approx_equal(_get_dropout_proportions(
-                            'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.25),
-                        [ ('lstm.*', 0.15) ])
+        'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.25),
+        [('lstm.*', 0.15)])
     assert_approx_equal(_get_dropout_proportions(
-                            'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.5),
-                        [ ('lstm.*', 0.3) ])
+        'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.5),
+        [('lstm.*', 0.3)])
     assert_approx_equal(_get_dropout_proportions(
-                            'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.9),
-                        [ ('lstm.*', 0.6) ])
+        'lstm.*=0.0,0.3,0.0@0.75,1.0', 0.9),
+        [('lstm.*', 0.6)])
 
 
 if __name__ == '__main__':

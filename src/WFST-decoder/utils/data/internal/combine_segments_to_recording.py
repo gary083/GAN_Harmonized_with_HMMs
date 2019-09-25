@@ -4,10 +4,10 @@
 # Apache 2.0
 
 from __future__ import print_function
+
 import argparse
-import sys
-import collections
 from collections import defaultdict
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="""
@@ -19,8 +19,8 @@ def get_args():
         recording-level.""")
 
     parser.add_argument("--write-reco2utt", help="If provided, writes a "
-                        "mapping from recording-id to list of utterances "
-                        "sorted by start and end times.")
+                                                 "mapping from recording-id to list of utterances "
+                                                 "sorted by start and end times.")
     parser.add_argument("segments_in", help="Input segments file")
     parser.add_argument("utt2spk_out", help="Output utt2spk file")
 
@@ -53,13 +53,13 @@ def main():
                 open(args.utt2spk_out, 'w') as utt2spk_writer:
             for reco, segments_in_reco in segments_for_reco.items():
                 utts = ' '.join([seg[0] for seg in sorted(
-                    segments_in_reco, key=lambda x:(x[1], x[2]))])
+                    segments_in_reco, key=lambda x: (x[1], x[2]))])
                 print("{0} {1}".format(reco, utts), file=reco2utt_writer)
-                print ("{0} {0}".format(reco), file=utt2spk_writer)
+                print("{0} {0}".format(reco), file=utt2spk_writer)
     else:
         with open(args.utt2spk_out, 'w') as utt2spk_writer:
             for reco in segments_for_reco.keys():
-                print ("{0} {0}".format(reco), file=utt2spk_writer)
+                print("{0} {0}".format(reco), file=utt2spk_writer)
 
 
 if __name__ == "__main__":

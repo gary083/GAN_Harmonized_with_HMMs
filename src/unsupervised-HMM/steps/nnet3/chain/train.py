@@ -23,7 +23,6 @@ import libs.common as common_lib
 import libs.nnet3.train.chain_objf.acoustic_model as chain_lib
 import libs.nnet3.report.log_parse as nnet3_log_parse
 
-
 logger = logging.getLogger('libs')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
@@ -75,7 +74,7 @@ def get_args():
     parser.add_argument("--chain.xent-regularize", type=float,
                         dest='xent_regularize', default=0.0,
                         help="Weight of regularization function which is the "
-                        "cross-entropy cost the outputs.")
+                             "cross-entropy cost the outputs.")
     parser.add_argument("--chain.right-tolerance", type=int,
                         dest='right_tolerance', default=5, help="")
     parser.add_argument("--chain.left-tolerance", type=int,
@@ -91,12 +90,12 @@ def get_args():
     parser.add_argument("--chain.frame-subsampling-factor", type=int,
                         dest='frame_subsampling_factor', default=3,
                         help="ratio of frames-per-second of features we "
-                        "train on, to chain model's output")
+                             "train on, to chain model's output")
     parser.add_argument("--chain.alignment-subsampling-factor", type=int,
                         dest='alignment_subsampling_factor',
                         default=3,
                         help="ratio of frames-per-second of input "
-                        "alignments to chain model's output")
+                             "alignments to chain model's output")
     parser.add_argument("--chain.left-deriv-truncate", type=int,
                         dest='left_deriv_truncate',
                         default=None,
@@ -171,17 +170,17 @@ def get_args():
     # General options
     parser.add_argument("--feat-dir", type=str, required=True,
                         help="Directory with features used for training "
-                        "the neural network.")
+                             "the neural network.")
     parser.add_argument("--tree-dir", type=str, required=True,
                         help="""Directory containing the tree to use for this
                         model (we also expect final.mdl and ali.*.gz in that
                         directory""")
     parser.add_argument("--lat-dir", type=str, required=True,
                         help="Directory with numerator lattices "
-                        "used for training the neural network.")
+                             "used for training the neural network.")
     parser.add_argument("--dir", type=str, required=True,
                         help="Directory to store the models and "
-                        "all other files.")
+                             "all other files.")
 
     print(' '.join(sys.argv))
     print(sys.argv)
@@ -220,8 +219,8 @@ def process_args(args):
 
     if (not os.path.exists(args.dir)):
         raise Exception("This script expects --dir={0} to exist.")
-    if (not os.path.exists(args.dir+"/configs") and
-        (args.input_model is None or not os.path.exists(args.input_model))):
+    if (not os.path.exists(args.dir + "/configs") and
+            (args.input_model is None or not os.path.exists(args.input_model))):
         raise Exception("Either --trainer.input-model option should be supplied, "
                         "and exist; or the {0}/configs directory should exist."
                         "".format(args.dir))
@@ -393,12 +392,12 @@ def train(args, run_opts):
 
     [egs_left_context, egs_right_context,
      frames_per_eg_str, num_archives] = (
-         common_train_lib.verify_egs_dir(egs_dir, feat_dim,
-                                         ivector_dim, ivector_id,
-                                         egs_left_context, egs_right_context,
-                                         egs_left_context_initial,
-                                         egs_right_context_final))
-    assert(args.chunk_width == frames_per_eg_str)
+        common_train_lib.verify_egs_dir(egs_dir, feat_dim,
+                                        ivector_dim, ivector_id,
+                                        egs_left_context, egs_right_context,
+                                        egs_left_context_initial,
+                                        egs_right_context_final))
+    assert (args.chunk_width == frames_per_eg_str)
     num_archives_expanded = num_archives * args.frame_subsampling_factor
 
     if (args.num_jobs_final > num_archives_expanded):
@@ -419,7 +418,7 @@ def train(args, run_opts):
     else:
         use_multitask_egs = False
 
-    if ((args.stage <= -2) and (os.path.exists(args.dir+"/configs/init.config"))
+    if ((args.stage <= -2) and (os.path.exists(args.dir + "/configs/init.config"))
             and (args.input_model is None)):
         logger.info('Computing the preconditioning matrix for input features')
 
@@ -461,7 +460,7 @@ def train(args, run_opts):
     if args.deriv_truncate_margin is not None:
         min_deriv_time = -args.deriv_truncate_margin - model_left_context
         max_deriv_time_relative = \
-           args.deriv_truncate_margin + model_right_context
+            args.deriv_truncate_margin + model_right_context
 
     logger.info("Training will run for {0} epochs = "
                 "{1} iterations".format(args.num_epochs, num_iters))
@@ -491,8 +490,8 @@ def train(args, run_opts):
             if args.shrink_value < shrinkage_value:
                 shrinkage_value = (args.shrink_value
                                    if common_train_lib.should_do_shrinkage(
-                                       iter, model_file,
-                                       args.shrink_saturation_threshold)
+                    iter, model_file,
+                    args.shrink_saturation_threshold)
                                    else shrinkage_value)
 
             percent = num_archives_processed * 100.0 / num_archives_to_process
@@ -543,7 +542,7 @@ def train(args, run_opts):
                 # do a clean up everything but the last 2 models, under certain
                 # conditions
                 common_train_lib.remove_model(
-                    args.dir, iter-2, num_iters, models_to_combine,
+                    args.dir, iter - 2, num_iters, models_to_combine,
                     args.preserve_model_interval)
 
             if args.email is not None:
@@ -633,6 +632,7 @@ def main():
         if not isinstance(e, KeyboardInterrupt):
             traceback.print_exc()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -1,14 +1,14 @@
 import _pickle as cPickle
 
-class timit_path:
 
+class timit_path:
     train_meta = '/nfs/Caishen/givebirthday/timit/processed/timit-train-meta.pkl'
     train_mfcc = '/nfs/Caishen/givebirthday/timit/processed/timit-train-mfcc.pkl'
     train_fbank = '/nfs/Caishen/givebirthday/timit/processed/timit-train-fbank.pkl'
     train_spec = '/nfs/Caishen/givebirthday/timit/processed/timit-train-spec.pkl'
     train_tran = '/nfs/Caishen/givebirthday/timit/processed/timit-train-tran.txt'
-    train_wrd  = '/nfs/Caishen/givebirthday/timit/processed/timit-train-wrd.pkl'
-    train_phn  = '/nfs/Caishen/givebirthday/timit/processed/timit-train-phn.pkl'
+    train_wrd = '/nfs/Caishen/givebirthday/timit/processed/timit-train-wrd.pkl'
+    train_phn = '/nfs/Caishen/givebirthday/timit/processed/timit-train-phn.pkl'
     train_mfcc_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-train-mfcc-nor.pkl'
     train_fbank_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-train-fbank-nor.pkl'
     train_spec_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-train-spec-nor.pkl'
@@ -18,11 +18,12 @@ class timit_path:
     test_fbank = '/nfs/Caishen/givebirthday/timit/processed/timit-test-fbank.pkl'
     test_spec = '/nfs/Caishen/givebirthday/timit/processed/timit-test-spec.pkl'
     test_tran = '/nfs/Caishen/givebirthday/timit/processed/timit-test-tran.txt'
-    test_wrd  = '/nfs/Caishen/givebirthday/timit/processed/timit-test-wrd.pkl'
-    test_phn  = '/nfs/Caishen/givebirthday/timit/processed/timit-test-phn.pkl'
+    test_wrd = '/nfs/Caishen/givebirthday/timit/processed/timit-test-wrd.pkl'
+    test_phn = '/nfs/Caishen/givebirthday/timit/processed/timit-test-phn.pkl'
     test_mfcc_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-test-mfcc-nor.pkl'
     test_fbank_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-test-fbank-nor.pkl'
     test_spec_nor = '/nfs/Caishen/givebirthday/timit/processed/timit-test-spec-nor.pkl'
+
 
 if __name__ == '__main__':
     train_wrd = cPickle.load(open(timit_path.train_wrd, 'rb'))

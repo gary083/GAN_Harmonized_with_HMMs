@@ -20,10 +20,12 @@ limitations under the License.
 '''
 
 import struct
+
 import numpy as np
 
 np.set_printoptions(threshold=999999999)
 np.set_printoptions(linewidth=999999999)
+
 
 class ArkReader(object):
     '''
@@ -105,7 +107,7 @@ class ArkReader(object):
         if len(self.scp_data) == 0:
             return None, None, True
 
-        #if at end of file loop around
+        # if at end of file loop around
         if self.scp_position >= len(self.scp_data):
             looped = True
             self.scp_position = 0
@@ -114,8 +116,8 @@ class ArkReader(object):
 
         self.scp_position += 1
 
-        return (self.utt_ids[self.scp_position-1],
-                self.read_utt_data(self.scp_position-1), looped)
+        return (self.utt_ids[self.scp_position - 1],
+                self.read_utt_data(self.scp_position - 1), looped)
 
     def read_next_scp(self):
         '''
@@ -125,13 +127,13 @@ class ArkReader(object):
             the utterance ID of the utterance that was read
         '''
 
-        #if at end of file loop around
+        # if at end of file loop around
         if self.scp_position >= len(self.scp_data):
             self.scp_position = 0
 
         self.scp_position += 1
 
-        return self.utt_ids[self.scp_position-1]
+        return self.utt_ids[self.scp_position - 1]
 
     def read_previous_scp(self):
         '''
@@ -141,12 +143,12 @@ class ArkReader(object):
             the utterance ID of the utterance that was read
         '''
 
-        if self.scp_position < 0: #if at beginning of file loop around
+        if self.scp_position < 0:  # if at beginning of file loop around
             self.scp_position = len(self.scp_data) - 1
 
         self.scp_position -= 1
 
-        return self.utt_ids[self.scp_position+1]
+        return self.utt_ids[self.scp_position + 1]
 
     def read_utt(self, utt_id):
         '''
@@ -163,6 +165,7 @@ class ArkReader(object):
 
         self.scp_data = self.scp_data[self.scp_position:-1]
         self.utt_ids = self.utt_ids[self.scp_position:-1]
+
 
 class ArkWriter(object):
     '''
@@ -201,9 +204,9 @@ class ArkWriter(object):
         ark_file_write = open(ark, 'ab')
         utt_mat = np.asarray(utt_mat, dtype=np.float32)
         rows, cols = utt_mat.shape
-        ark_file_write.write(struct.pack('<%ds'%(len(utt_id)), utt_id))
+        ark_file_write.write(struct.pack('<%ds' % (len(utt_id)), utt_id))
         pos = ark_file_write.tell()
-        ark_file_write.write(struct.pack('<xcccc', 'B'.encode('utf-8'), 'F'.encode('utf-8'), 
+        ark_file_write.write(struct.pack('<xcccc', 'B'.encode('utf-8'), 'F'.encode('utf-8'),
                                          'M'.encode('utf-8'), ' '.encode('utf-8')))
         ark_file_write.write(struct.pack('<bi', 4, rows))
         ark_file_write.write(struct.pack('<bi', 4, cols))

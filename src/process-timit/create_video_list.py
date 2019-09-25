@@ -7,11 +7,11 @@ import sys
 if __name__ == "__main__":
     output_path = sys.argv[1]
     wav_path = sys.argv[2]
-    mode = sys.argv[3] #train or test
-    
+    mode = sys.argv[3]  # train or test
+
     wav_dir = os.path.join(wav_path, mode)
     all_file = os.listdir(wav_dir)
-    
+
     # cout_word = f"Creating {mode} vedio list...     "
     # sys.stdout.write(cout_word)
     # sys.stdout.flush()

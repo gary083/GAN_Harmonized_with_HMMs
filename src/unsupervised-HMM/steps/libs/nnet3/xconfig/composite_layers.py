@@ -5,10 +5,9 @@
     term for things like TDNN-F that contain several affine or linear comopnents.
 """
 from __future__ import print_function
-import math
-import re
-import sys
+
 from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
+
 
 # This class is intended to implement an extension of the factorized TDNN
 # (TDNN-F) that supports resnet-type 'bypass' connections.  It is for lines like
@@ -67,18 +66,18 @@ from libs.nnet3.xconfig.basic_layers import XconfigLayerBase
 
 class XconfigTdnnfLayer(XconfigLayerBase):
 
-    def __init__(self, first_token, key_to_value, prev_names = None):
+    def __init__(self, first_token, key_to_value, prev_names=None):
         assert first_token == "tdnnf-layer"
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
     def set_default_configs(self):
-        self.config = {'input':'[-1]',
-                       'dim':-1,
-                       'bottleneck-dim':-1,
-                       'bypass-scale':0.66,
-                       'dropout-proportion':-1.0,
-                       'time-stride':1,
-                       'l2-regularize':0.0,
+        self.config = {'input': '[-1]',
+                       'dim': -1,
+                       'bottleneck-dim': -1,
+                       'bypass-scale': 0.66,
+                       'dropout-proportion': -1.0,
+                       'time-stride': 1,
+                       'l2-regularize': 0.0,
                        'max-change': 0.75,
                        'self-repair-scale': 1.0e-05}
 
@@ -104,7 +103,6 @@ class XconfigTdnnfLayer(XconfigLayerBase):
             raise RuntimeError('bypass-scale is nonzero but output-dim != input-dim: {0} != {1}'
                                ''.format(output_dim, input_dim))
 
-
     def output_name(self, auxiliary_output=None):
         assert auxiliary_output is None
         output_component = ''
@@ -118,7 +116,6 @@ class XconfigTdnnfLayer(XconfigLayerBase):
             output_component = 'batchnorm'
         return '{0}.{1}'.format(self.name, output_component)
 
-
     def output_dim(self, auxiliary_output=None):
         return self.config['dim']
 
@@ -130,7 +127,6 @@ class XconfigTdnnfLayer(XconfigLayerBase):
             for config_name in ['ref', 'final']:
                 ans.append((config_name, line))
         return ans
-
 
     def _generate_config(self):
         configs = []
@@ -156,8 +152,8 @@ class XconfigTdnnfLayer(XconfigLayerBase):
         configs.append('component name={0}.linear type=TdnnComponent input-dim={1} '
                        'output-dim={2} l2-regularize={3} max-change={4} use-bias=false '
                        'time-offsets={5} orthonormal-constraint=-1.0'.format(
-                           name, input_dim, bottleneck_dim, l2_regularize,
-                           max_change, time_offsets1))
+            name, input_dim, bottleneck_dim, l2_regularize,
+            max_change, time_offsets1))
         configs.append('component-node name={0}.linear component={0}.linear '
                        'input={1}'.format(name, input_descriptor))
 
@@ -165,15 +161,15 @@ class XconfigTdnnfLayer(XconfigLayerBase):
         configs.append('component name={0}.affine type=TdnnComponent '
                        'input-dim={1} output-dim={2} l2-regularize={3} max-change={4} '
                        'time-offsets={5}'.format(
-                           name, bottleneck_dim, output_dim, l2_regularize,
-                           max_change, time_offsets2))
+            name, bottleneck_dim, output_dim, l2_regularize,
+            max_change, time_offsets2))
         configs.append('component-node name={0}.affine component={0}.affine '
                        'input={0}.linear'.format(name))
 
         # The ReLU layer
         configs.append('component name={0}.relu type=RectifiedLinearComponent dim={1} '
                        'self-repair-scale={2}'.format(
-                           name, output_dim, self_repair_scale))
+            name, output_dim, self_repair_scale))
         configs.append('component-node name={0}.relu component={0}.relu '
                        'input={0}.affine'.format(name))
 
@@ -191,7 +187,7 @@ class XconfigTdnnfLayer(XconfigLayerBase):
             # interval of a size that varies with dropout-proportion.
             configs.append('component name={0}.dropout type=GeneralDropoutComponent '
                            'dim={1} dropout-proportion={2} continuous=true'.format(
-                               name, output_dim, dropout_proportion))
+                name, output_dim, dropout_proportion))
             configs.append('component-node name={0}.dropout component={0}.dropout '
                            'input={0}.batchnorm'.format(name))
             cur_component_type = 'dropout'
@@ -209,10 +205,11 @@ class XconfigTdnnfLayer(XconfigLayerBase):
                            'dim={1}'.format(name, output_dim))
             configs.append('component-node name={0}.noop component={0}.noop '
                            'input=Sum(Scale({1}, {2}), {0}.{3})'.format(
-                               name, bypass_scale, input_descriptor,
-                               cur_component_type))
+                name, bypass_scale, input_descriptor,
+                cur_component_type))
 
         return configs
+
 
 # This is for lines like the following:
 #  prefinal-layer name=prefinal-chain input=prefinal-l l2-regularize=0.02 big-dim=1024 small-dim=256
@@ -228,15 +225,15 @@ class XconfigTdnnfLayer(XconfigLayerBase):
 # repeated pattern.
 class XconfigPrefinalLayer(XconfigLayerBase):
 
-    def __init__(self, first_token, key_to_value, prev_names = None):
+    def __init__(self, first_token, key_to_value, prev_names=None):
         assert first_token == "prefinal-layer"
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
     def set_default_configs(self):
-        self.config = {'input':'[-1]',
-                       'big-dim':-1,
-                       'small-dim':-1,
-                       'l2-regularize':0.0,
+        self.config = {'input': '[-1]',
+                       'big-dim': -1,
+                       'small-dim': -1,
+                       'l2-regularize': 0.0,
                        'max-change': 0.75,
                        'self-repair-scale': 1.0e-05}
 
@@ -265,7 +262,6 @@ class XconfigPrefinalLayer(XconfigLayerBase):
                 ans.append((config_name, line))
         return ans
 
-
     def _generate_config(self):
         configs = []
         name = self.name
@@ -281,14 +277,14 @@ class XconfigPrefinalLayer(XconfigLayerBase):
         # The affine layer, from input-dim to big-dim.
         configs.append('component name={0}.affine type=NaturalGradientAffineComponent '
                        'input-dim={1} output-dim={2} l2-regularize={3} max-change={4}'.format(
-                           name, input_dim, big_dim, l2_regularize, max_change))
+            name, input_dim, big_dim, l2_regularize, max_change))
         configs.append('component-node name={0}.affine component={0}.affine '
                        'input={1}'.format(name, input_descriptor))
 
         # The ReLU layer
         configs.append('component name={0}.relu type=RectifiedLinearComponent dim={1} '
                        'self-repair-scale={2}'.format(
-                           name, big_dim, self_repair_scale))
+            name, big_dim, self_repair_scale))
         configs.append('component-node name={0}.relu component={0}.relu '
                        'input={0}.affine'.format(name))
 
@@ -303,8 +299,8 @@ class XconfigPrefinalLayer(XconfigLayerBase):
         configs.append('component name={0}.linear type=LinearComponent '
                        'input-dim={1} output-dim={2} l2-regularize={3} max-change={4} '
                        'orthonormal-constraint=-1 '.format(
-                           name, big_dim, small_dim,
-                           l2_regularize, max_change))
+            name, big_dim, small_dim,
+            l2_regularize, max_change))
         configs.append('component-node name={0}.linear component={0}.linear '
                        'input={0}.batchnorm1'.format(name))
 

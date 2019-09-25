@@ -16,12 +16,14 @@ The column dimension is num-sources * dim, which dim is specified by --dim
 option.
 """
 
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
 import argparse
 import logging
-import numpy as np
 import sys
+
+import numpy as np
 
 sys.path.insert(0, 'steps')
 import libs.common as common_lib
@@ -48,28 +50,28 @@ def get_args():
 
     parser.add_argument("--weights", type=str, default="",
                         help="A comma-separated list of weights corresponding "
-                        "to each targets source being combined. "
-                        "Weights will be normalized internally to sum-to-one.")
+                             "to each targets source being combined. "
+                             "Weights will be normalized internally to sum-to-one.")
     parser.add_argument("--dim", type=int, default=3,
                         help="Number of columns corresponding to each "
-                        "target matrix")
+                             "target matrix")
     parser.add_argument("--remove-mismatch-frames", type=str, default=False,
                         choices=["true", "false"],
                         action=common_lib.StrToBoolAction,
                         help="If true, the mismatch frames are removed by "
-                        "setting targets to 0 in the following cases:\n"
-                        "a) If none of the sources have a column with value "
-                        "> 0.5\n"
-                        "b) If two sources have columns with value > 0.5, but "
-                        "they occur at different indexes e.g. silence prob is "
-                        "> 0.5 for the targets from alignment, and speech prob "
-                        "> 0.5 for the targets from decoding.")
+                             "setting targets to 0 in the following cases:\n"
+                             "a) If none of the sources have a column with value "
+                             "> 0.5\n"
+                             "b) If two sources have columns with value > 0.5, but "
+                             "they occur at different indexes e.g. silence prob is "
+                             "> 0.5 for the targets from alignment, and speech prob "
+                             "> 0.5 for the targets from decoding.")
 
     parser.add_argument("pasted_targets", type=str,
                         help="Input target matrices with columns appended "
-                        "together using paste-feats. Its column dimension is "
-                        "num-sources * dim, which dim is specified by --dim "
-                        "option.")
+                             "together using paste-feats. Its column dimension is "
+                             "num-sources * dim, which dim is specified by --dim "
+                             "option.")
     parser.add_argument("out_targets", type=str,
                         help="Output target matrices")
 
@@ -125,15 +127,15 @@ def should_remove_frame(row, dim):
     best_class = max_idx % dim
 
     confident_in_source = []  # List of length num_sources
-                              # Element 'i' is 1,
-                              # if the best value for the source 'i' is > 0.5
+    # Element 'i' is 1,
+    # if the best value for the source 'i' is > 0.5
     best_values_for_source = []  # Element 'i' is a pair (value, class),
-                                 # where 'class' is argmax over the scores
-                                 # corresponding to the source 'i' and
-                                 # 'value' is the corresponding score.
+    # where 'class' is argmax over the scores
+    # corresponding to the source 'i' and
+    # 'value' is the corresponding score.
     for source_idx in range(num_sources):
         idx = np.argmax(row[(source_idx * dim):
-                            ((source_idx+1) * dim)])
+                            ((source_idx + 1) * dim)])
         val = row[source_idx * dim + idx]
         confident_in_source.append(bool(val > 0.5))
         best_values_for_source.append((val, idx))
@@ -183,15 +185,15 @@ def run(args):
                     else:
                         for i in range(num_sources):
                             out_mat[n, :] += (
-                                mat[n, (i * args.dim) : ((i+1) * args.dim)]
-                                * (1.0 if args.weights is None
-                                   else args.weights[i]))
+                                    mat[n, (i * args.dim): ((i + 1) * args.dim)]
+                                    * (1.0 if args.weights is None
+                                       else args.weights[i]))
             else:
                 # Just interpolate the targets
                 for i in range(num_sources):
                     out_mat += (
-                        mat[:, (i * args.dim) : ((i+1) * args.dim)]
-                        * (1.0 if args.weights is None else args.weights[i]))
+                            mat[:, (i * args.dim): ((i + 1) * args.dim)]
+                            * (1.0 if args.weights is None else args.weights[i]))
 
             common_lib.write_matrix_ascii(targets_writer, out_mat.tolist(),
                                           key=key)

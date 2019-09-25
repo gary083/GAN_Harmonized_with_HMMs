@@ -9,11 +9,13 @@ and some basic layer definitions.
 """
 
 from __future__ import print_function
+
 import math
 import re
 import sys
-import libs.nnet3.xconfig.utils as xutils
+
 import libs.common as common_lib
+import libs.nnet3.xconfig.utils as xutils
 
 
 class XconfigLayerBase(object):
@@ -54,7 +56,7 @@ class XconfigLayerBase(object):
         # 'all_layers'.
         for prev_layer in all_layers:
             if (self.name == prev_layer.name and
-                prev_layer.layer_type is not 'existing'):
+                    prev_layer.layer_type is not 'existing'):
                 raise RuntimeError("Name '{0}' is used for more than one "
                                    "layer.".format(self.name))
 
@@ -73,7 +75,6 @@ class XconfigLayerBase(object):
         # the following, which should be overridden in the child class, checks
         # that the config parameters that have been set are reasonable.
         self.check_configs()
-
 
     def set_configs(self, key_to_value, all_layers):
         """ Sets the config variables.
@@ -94,7 +95,7 @@ class XconfigLayerBase(object):
                     raise RuntimeError("Configuration value {0}={1} was not "
                                        "expected in layer of type {2}; allowed "
                                        "configs with their defaults: {3}"
-                                       "" .format(key, value, self.layer_type, configs))
+                                       "".format(key, value, self.layer_type, configs))
 
         for key, value in key_to_value.items():
             if key != 'name':
@@ -205,8 +206,8 @@ class XconfigLayerBase(object):
         """
 
         layer_to_dim_func = \
-                lambda name: xutils.get_dim_from_layer_name(all_layers, self,
-                                                            name)
+            lambda name: xutils.get_dim_from_layer_name(all_layers, self,
+                                                        name)
         return descriptor.dim(layer_to_dim_func)
 
     def get_string_for_descriptor(self, descriptor, all_layers):
@@ -216,8 +217,8 @@ class XconfigLayerBase(object):
         """
 
         layer_to_string_func = \
-                lambda name: xutils.get_string_from_layer_name(all_layers,
-                                                               self, name)
+            lambda name: xutils.get_string_from_layer_name(all_layers,
+                                                           self, name)
         return descriptor.config_string(layer_to_string_func)
 
     def get_name(self):
@@ -317,6 +318,7 @@ class XconfigInputLayer(XconfigLayerBase):
     'input name=ivector dim=100'
     in the config file.
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
 
         assert first_token == 'input'
@@ -494,23 +496,23 @@ class XconfigOutputLayer(XconfigLayerBase):
                        'dim': -1,
                        'bottleneck-dim': -1,
                        'orthonormal-constraint': 1.0,
-                            # orthonormal-constraint only matters if bottleneck-dim is set.
+                       # orthonormal-constraint only matters if bottleneck-dim is set.
                        'include-log-softmax': True,
-                            # this would be false for chain models
+                       # this would be false for chain models
                        'objective-type': 'linear',
-                            # see Nnet::ProcessOutputNodeConfigLine in
-                            # nnet-nnet.cc for other options
+                       # see Nnet::ProcessOutputNodeConfigLine in
+                       # nnet-nnet.cc for other options
                        'learning-rate-factor': 1.0,
-                            # used in DNN (not RNN) training when using
-                            # frame-level objfns,
+                       # used in DNN (not RNN) training when using
+                       # frame-level objfns,
                        'max-change': 1.5,
                        'param-stddev': 0.0,
                        'bias-stddev': 0.0,
                        'l2-regularize': 0.0,
                        'output-delay': 0,
                        'ng-affine-options': '',
-                       'ng-linear-options': ''    # only affects bottleneck output layers.
-                      }
+                       'ng-linear-options': ''  # only affects bottleneck output layers.
+                       }
 
     def check_configs(self):
 
@@ -573,7 +575,6 @@ class XconfigOutputLayer(XconfigLayerBase):
                 ans.append((config_name, line))
         return ans
 
-
     def _generate_config(self):
 
         configs = []
@@ -628,7 +629,6 @@ class XconfigOutputLayer(XconfigLayerBase):
             cur_node = '{0}.linear'.format(self.name)
             cur_dim = bottleneck_dim
 
-
         line = ('component name={0}.affine'
                 ' type=NaturalGradientAffineComponent'
                 ' input-dim={1}'
@@ -663,7 +663,7 @@ class XconfigOutputLayer(XconfigLayerBase):
 
         line = ('output-node name={0} input={1} '
                 'objective={2}'.format(
-                    self.name, cur_node, objective_type))
+            self.name, cur_node, objective_type))
         configs.append(line)
         return configs
 
@@ -702,6 +702,7 @@ class XconfigBasicLayer(XconfigLayerBase):
                                add l2 regularization on the parameter norm for
                                 this component.
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
@@ -715,22 +716,22 @@ class XconfigBasicLayer(XconfigLayerBase):
                        'self-repair-scale': 1.0e-05,
                        'target-rms': 1.0,
                        'ng-affine-options': '',
-                       'ng-linear-options': '',    # only affects bottleneck layers.
+                       'ng-linear-options': '',  # only affects bottleneck layers.
                        'dropout-proportion': 0.5,  # dropout-proportion only
-                                                   # affects layers with
-                                                   # 'dropout' in the name
+                       # affects layers with
+                       # 'dropout' in the name
                        'dropout-per-dim': False,  # if dropout-per-dim=true, the dropout
-                                                  # mask is shared across time.
-                       'dropout-per-dim-continuous':  False, # if you set this, it's
-                                                    # like dropout-per-dim but with a
-                                                    # continuous-valued (not zero-one) mask.
+                       # mask is shared across time.
+                       'dropout-per-dim-continuous': False,  # if you set this, it's
+                       # like dropout-per-dim but with a
+                       # continuous-valued (not zero-one) mask.
                        'add-log-stddev': False,
                        # the following are not really inspected by this level of
                        # code, just passed through (but not if left at '').
                        'bias-stddev': '',
                        'l2-regularize': '',
                        'learning-rate-factor': '',
-                       'max-change': 0.75 }
+                       'max-change': 0.75}
 
     def check_configs(self):
         if self.config['dim'] < 0:
@@ -800,8 +801,8 @@ class XconfigBasicLayer(XconfigLayerBase):
         target_rms = self.config['target-rms']
 
         affine_options = self.config['ng-affine-options']
-        for opt_name in [ 'max-change', 'learning-rate-factor',
-                          'bias-stddev', 'l2-regularize' ]:
+        for opt_name in ['max-change', 'learning-rate-factor',
+                         'bias-stddev', 'l2-regularize']:
             value = self.config[opt_name]
             if value != '':
                 affine_options += ' {0}={1}'.format(opt_name, value)
@@ -827,7 +828,7 @@ class XconfigBasicLayer(XconfigLayerBase):
             # We don't include the l2-regularize option because it's useless
             # given the orthonormality constraint.
             linear_options = self.config['ng-linear-options']
-            for opt_name in [ 'max-change', 'learning-rate-factor' ]:
+            for opt_name in ['max-change', 'learning-rate-factor']:
                 value = self.config[opt_name]
                 if value != '':
                     linear_options += ' {0}={1}'.format(opt_name, value)
@@ -843,7 +844,6 @@ class XconfigBasicLayer(XconfigLayerBase):
             configs.append(line)
             cur_node = '{0}.linear'.format(self.name)
             cur_dim = bottleneck_dim
-
 
         line = ('component name={0}.affine type=NaturalGradientAffineComponent'
                 ' input-dim={1} output-dim={2} {3}'
@@ -903,15 +903,15 @@ class XconfigBasicLayer(XconfigLayerBase):
                         self.config['dropout-per-dim-continuous']):
                     line = ('component name={0}.{1} type=DropoutComponent '
                             'dim={2} dropout-proportion={3}'.format(
-                                self.name, nonlinearity, output_dim,
-                                self.config['dropout-proportion']))
+                        self.name, nonlinearity, output_dim,
+                        self.config['dropout-proportion']))
                 else:
-                    continuous_opt='continuous=true' if self.config['dropout-per-dim-continuous'] else ''
+                    continuous_opt = 'continuous=true' if self.config['dropout-per-dim-continuous'] else ''
 
                     line = ('component name={0}.dropout type=GeneralDropoutComponent '
                             'dim={1} dropout-proportion={2} {3}'.format(
-                                self.name, output_dim, self.config['dropout-proportion'],
-                                continuous_opt))
+                        self.name, output_dim, self.config['dropout-proportion'],
+                        continuous_opt))
             else:
                 raise RuntimeError("Unknown nonlinearity type: {0}"
                                    .format(nonlinearity))
@@ -944,6 +944,7 @@ class XconfigFixedAffineLayer(XconfigLayerBase):
       affine-transform-file='' [Must be specified.]
       delay=0                  [Optional delay for the output-node in init.config]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         assert first_token == 'fixed-affine-layer'
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
@@ -990,7 +991,8 @@ class XconfigFixedAffineLayer(XconfigLayerBase):
             if self.config['delay'] != 0:
                 line = 'component name={0}.delayed type=NoOpComponent dim={1}'.format(self.name, input_dim)
                 ans.append(('init', line))
-                line = 'component-node name={0}.delayed component={0}.delayed input={1}'.format(self.name, descriptor_final_string)
+                line = 'component-node name={0}.delayed component={0}.delayed input={1}'.format(self.name,
+                                                                                                descriptor_final_string)
                 ans.append(('init', line))
                 line = 'output-node name=output input=Offset({0}.delayed, {1})'.format(self.name, self.config['delay'])
                 ans.append(('init', line))
@@ -1136,6 +1138,7 @@ class XconfigIdctLayer(XconfigLayerBase):
       cepstral-lifter=22       [Apply liftering co-efficient.]
       affine-transform-file='' [Must be specified.]
     """
+
     def __init__(self, first_token, key_to_value, prev_names=None):
         assert first_token == 'idct-layer'
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
@@ -1221,18 +1224,16 @@ class XconfigExistingLayer(XconfigLayerBase):
     """
 
     def __init__(self, first_token, key_to_value, prev_names=None):
-
         assert first_token == 'existing'
         XconfigLayerBase.__init__(self, first_token, key_to_value, prev_names)
 
-
     def set_default_configs(self):
-        self.config = { 'dim': -1}
+        self.config = {'dim': -1}
 
     def check_configs(self):
         if self.config['dim'] <= 0:
             raise RuntimeError("Dimension of existing-layer '{0}'"
-                                "should be positive.".format(self.name))
+                               "should be positive.".format(self.name))
 
     def get_input_descriptor_names(self):
         return []  # there is no 'input' field in self.config.
@@ -1252,7 +1253,6 @@ class XconfigExistingLayer(XconfigLayerBase):
         # any '*.config'
         ans = []
         return ans
-
 
 
 def test_layers():

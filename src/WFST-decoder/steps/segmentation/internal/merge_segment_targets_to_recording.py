@@ -12,9 +12,10 @@ the option --default-targets or [ 0 0 0 ] if unspecified.
 
 import argparse
 import logging
-import numpy as np
 import subprocess
 import sys
+
+import numpy as np
 
 sys.path.insert(0, 'steps')
 import libs.common as common_lib
@@ -39,7 +40,7 @@ def get_args():
     parser.add_argument("--default-targets", type=str, default=None,
                         action=common_lib.NullstrToNoneAction,
                         help="Vector of default targets for out-of-segments "
-                        "region")
+                             "region")
     parser.add_argument("--length-tolerance", type=int, default=4,
                         help="Tolerate length mismatches of this many frames")
     parser.add_argument("--verbose", type=int, default=0, choices=[0, 1, 2],
@@ -98,7 +99,7 @@ def read_reco2num_frames_file(reco2num_frames_file):
             if len(parts) != 2:
                 raise ValueError("Could not parse line {0} in "
                                  "reco2num-frames file {1}".format(
-                                     line, reco2num_frames_file))
+                    line, reco2num_frames_file))
             reco2num_frames[parts[0]] = int(parts[1])
     return reco2num_frames
 
@@ -163,7 +164,7 @@ def run(args):
             # reco2utt dictionary
             reco_mat = np.repeat(default_targets, reco2num_frames[reco],
                                  axis=0)
-            utts.sort(key=lambda x: segments[x][1])   # sort on start time
+            utts.sort(key=lambda x: segments[x][1])  # sort on start time
 
             end_frame_accounted = 0
 
@@ -205,8 +206,8 @@ def run(args):
                     logger.warning("For utterance {utt}, mismatch in segment "
                                    "length and targets matrix size; "
                                    "{s_len} vs {t_len}".format(
-                                       utt=utt, s_len=num_frames,
-                                       t_len=mat.shape[0]))
+                        utt=utt, s_len=num_frames,
+                        t_len=mat.shape[0]))
                     num_utt_err += 1
                     continue
 
@@ -234,7 +235,7 @@ def run(args):
                                    "i.e. this segment is completely within "
                                    "another segment. Ignoring this segment."
                                    "".format(utt=utt, end=end_frame))
-                    num_utt_err +=1
+                    num_utt_err += 1
                     continue
 
                 if start_frame < end_frame_accounted:
@@ -245,13 +246,13 @@ def run(args):
                     for n in range(0, end_frame_accounted - start_frame):
                         w = float(n) / float(end_frame_accounted - start_frame)
                         reco_mat[n + start_frame, :] = (
-                            reco_mat[n + start_frame, :] * (1.0 - w)
-                            + mat[n, :] * w)
+                                reco_mat[n + start_frame, :] * (1.0 - w)
+                                + mat[n, :] * w)
 
                     if end_frame > end_frame_accounted:
                         reco_mat[end_frame_accounted:end_frame, :] = (
-                            mat[(end_frame_accounted-start_frame):
-                                (end_frame-start_frame), :])
+                            mat[(end_frame_accounted - start_frame):
+                                (end_frame - start_frame), :])
                 else:
                     # No overlap with the previous utterances.
                     # So just add it to the output.

@@ -4,35 +4,39 @@
 # Apache 2.0.
 
 from __future__ import print_function
+
 import argparse
 import sys
 
+
 def GetArgs():
-    parser = argparse.ArgumentParser(description = "Apply an lexicon edits file (output from steps/dict/select_prons_bayesian.py)to an input lexicon"
-                                     "to produce a learned lexicon.",
-                                     epilog = "See steps/dict/learn_lexicon_greedy.sh for example")
+    parser = argparse.ArgumentParser(
+        description="Apply an lexicon edits file (output from steps/dict/select_prons_bayesian.py)to an input lexicon"
+                    "to produce a learned lexicon.",
+        epilog="See steps/dict/learn_lexicon_greedy.sh for example")
 
-    parser.add_argument("in_lexicon", metavar='<in-lexicon>', type = str,
-                        help = "Input lexicon. Each line must be <word> <phones>.")
-    parser.add_argument("lexicon_edits_file", metavar='<lexicon-edits-file>', type = str,
-                        help = "Input lexicon edits file containing human-readable & editable"
-                               "pronounciation info.  The info for each word is like:"
-                         "------------ an 4086.0 --------------"
-                         "R  | Y |  2401.6 |  AH N"
-                         "R  | Y |  640.8 |  AE N"
-                         "P  | Y |  1035.5 |  IH N"
-                         "R(ef), P(hone-decoding) represents the pronunciation source"
-                         "Y/N means the recommended decision of including this pron or not"
-                         "and the numbers are soft counts accumulated from lattice-align-word outputs. See steps/dict/select_prons_bayesian.py for more details.")
-    parser.add_argument("out_lexicon", metavar='<out-lexicon>', type = str,
-                        help = "Output lexicon to this file.")
+    parser.add_argument("in_lexicon", metavar='<in-lexicon>', type=str,
+                        help="Input lexicon. Each line must be <word> <phones>.")
+    parser.add_argument("lexicon_edits_file", metavar='<lexicon-edits-file>', type=str,
+                        help="Input lexicon edits file containing human-readable & editable"
+                             "pronounciation info.  The info for each word is like:"
+                             "------------ an 4086.0 --------------"
+                             "R  | Y |  2401.6 |  AH N"
+                             "R  | Y |  640.8 |  AE N"
+                             "P  | Y |  1035.5 |  IH N"
+                             "R(ef), P(hone-decoding) represents the pronunciation source"
+                             "Y/N means the recommended decision of including this pron or not"
+                             "and the numbers are soft counts accumulated from lattice-align-word outputs. See steps/dict/select_prons_bayesian.py for more details.")
+    parser.add_argument("out_lexicon", metavar='<out-lexicon>', type=str,
+                        help="Output lexicon to this file.")
 
-    print (' '.join(sys.argv), file=sys.stderr)
+    print(' '.join(sys.argv), file=sys.stderr)
 
     args = parser.parse_args()
     args = CheckArgs(args)
 
     return args
+
 
 def CheckArgs(args):
     if args.in_lexicon == "-":
@@ -48,6 +52,7 @@ def CheckArgs(args):
 
     return args
 
+
 def ReadLexicon(lexicon_file_handle):
     lexicon = set()
     if lexicon_file_handle:
@@ -57,11 +62,12 @@ def ReadLexicon(lexicon_file_handle):
                 continue
             if len(splits) < 2:
                 raise Exception('Invalid format of line ' + line
-                                    + ' in lexicon file.')
+                                + ' in lexicon file.')
             word = splits[0]
             phones = ' '.join(splits[1:])
             lexicon.add((word, phones))
     return lexicon
+
 
 def ApplyLexiconEdits(lexicon, lexicon_edits_file_handle):
     if lexicon_edits_file_handle:
@@ -75,15 +81,15 @@ def ApplyLexiconEdits(lexicon, lexicon_edits_file_handle):
                 if len(splits) != 2:
                     print(splits, file=sys.stderr)
                     raise Exception('Invalid format of line ' + line
-                                        + ' in lexicon edits file.')
+                                    + ' in lexicon edits file.')
                 word = splits[0].strip()
             else:
-            # parse the pron and decision 'Y/N' of accepting the pron or not,
-            # from a line like: 'P  | Y |  42.0 |  M AY K R AH F OW N Z'
+                # parse the pron and decision 'Y/N' of accepting the pron or not,
+                # from a line like: 'P  | Y |  42.0 |  M AY K R AH F OW N Z'
                 splits = line.split('|')
                 if len(splits) != 4:
                     raise Exception('Invalid format of line ' + line
-                                        + ' in lexicon edits file.')
+                                    + ' in lexicon edits file.')
                 pron = splits[3].strip()
                 if splits[1].strip() == 'Y':
                     lexicon.add((word, pron))
@@ -91,7 +97,7 @@ def ApplyLexiconEdits(lexicon, lexicon_edits_file_handle):
                     lexicon.discard((word, pron))
                 else:
                     raise Exception('Invalid format of line ' + line
-                                        + ' in lexicon edits file.')
+                                    + ' in lexicon edits file.')
     return lexicon
 
 
@@ -100,11 +106,13 @@ def WriteLexicon(lexicon, out_lexicon_handle):
         print('{0} {1}'.format(word, pron), file=out_lexicon_handle)
     out_lexicon_handle.close()
 
+
 def Main():
     args = GetArgs()
     lexicon = ReadLexicon(args.in_lexicon_handle)
     ApplyLexiconEdits(lexicon, args.lexicon_edits_file_handle)
     WriteLexicon(lexicon, args.out_lexicon_handle)
+
 
 if __name__ == "__main__":
     Main()

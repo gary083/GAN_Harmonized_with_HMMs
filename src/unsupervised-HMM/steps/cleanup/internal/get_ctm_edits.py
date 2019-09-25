@@ -5,7 +5,9 @@
 # Apache 2.0
 
 from __future__ import print_function
-import sys, operator, argparse
+
+import argparse
+import sys
 
 # Modify the CTM to include for each token the information from Levenshtein
 # alignment of 'hypothesis' and 'reference'
@@ -88,29 +90,27 @@ import sys, operator, argparse
 # AJJacobs_2007P-0001605-0003029 1 3.63 0.36 and 1.0 and cor
 
 
-
 parser = argparse.ArgumentParser(
-    description = "Append to the CTM the Levenshtein alignment of 'hypothesis' and 'reference'; "
-    "creates augmented CTM with extra fields (see script for details)")
+    description="Append to the CTM the Levenshtein alignment of 'hypothesis' and 'reference'; "
+                "creates augmented CTM with extra fields (see script for details)")
 
-parser.add_argument("--oov", type = int, default = -1,
-                    help = "The integer representation of the OOV symbol; substitutions "
-                    "by the OOV symbol for out-of-vocabulary reference words are treated "
-                    "as correct, if you also supply the --symbol-table option.")
-parser.add_argument("--symbol-table", type = str,
-                    help = "The words.txt your system used; if supplied, it is used to "
-                    "determine OOV words (and such words will count as correct if "
-                    "substituted by the OOV symbol).  See also the --oov option")
+parser.add_argument("--oov", type=int, default=-1,
+                    help="The integer representation of the OOV symbol; substitutions "
+                         "by the OOV symbol for out-of-vocabulary reference words are treated "
+                         "as correct, if you also supply the --symbol-table option.")
+parser.add_argument("--symbol-table", type=str,
+                    help="The words.txt your system used; if supplied, it is used to "
+                         "determine OOV words (and such words will count as correct if "
+                         "substituted by the OOV symbol).  See also the --oov option")
 # Required arguments
-parser.add_argument("edits_in", metavar = "<edits-in>",
-                    help = "Filename of output of 'align-text', which this program reads. "
-                    "Use /dev/stdin for standard input.")
-parser.add_argument("ctm_in", metavar = "<ctm-in>",
-                    help = "Filename of input hypothesis in ctm format")
-parser.add_argument("ctm_edits_out", metavar = "<ctm-edits-out>",
-                    help = "Filename of output (CTM appended with word-edit information)")
+parser.add_argument("edits_in", metavar="<edits-in>",
+                    help="Filename of output of 'align-text', which this program reads. "
+                         "Use /dev/stdin for standard input.")
+parser.add_argument("ctm_in", metavar="<ctm-in>",
+                    help="Filename of input hypothesis in ctm format")
+parser.add_argument("ctm_edits_out", metavar="<ctm-edits-out>",
+                    help="Filename of output (CTM appended with word-edit information)")
 args = parser.parse_args()
-
 
 
 def OpenFiles():
@@ -119,28 +119,28 @@ def OpenFiles():
         ctm_edits_out = open(args.ctm_edits_out, 'w')
     except:
         sys.exit("get_ctm_edits.py: error opening ctm-edits file {0} for output".format(
-                args.ctm_edits_out))
+            args.ctm_edits_out))
     try:
         edits_in = open(args.edits_in)
     except:
         sys.exit("get_ctm_edits.py: error opening edits file {0} for input".format(
-                args.edits_in))
+            args.edits_in))
     try:
         ctm_in = open(args.ctm_in)
     except:
         sys.exit("get_ctm_edits.py: error opening ctm file {0} for input".format(
-                args.ctm_in))
+            args.ctm_in))
 
     symbol_table = set()
     oov_word = None
     if args.symbol_table != None:
         if args.oov == -1:
             print("get_ctm_edits.py: error: if you set the the --symbol-table option "
-                  "you must also set the --oov option", file = sys.stderr)
+                  "you must also set the --oov option", file=sys.stderr)
         try:
             f = open(args.symbol_table, 'r')
             for line in f.readlines():
-                [ word, integer ] = line.split()
+                [word, integer] = line.split()
                 if int(integer) == args.oov:
                     oov_word = word
                 symbol_table.add(word)
@@ -152,6 +152,7 @@ def OpenFiles():
             sys.exit("get_ctm_edits.py: OOV word not found: check the values of "
                      "--symbol-table={0} and --oov={1}".format(args.symbol_table,
                                                                args.oov))
+
 
 # This function takes two lists
 # edits_array = [ [ hyp_word1, ref_word1], [ hyp_word2, ref_word2 ], ... ]
@@ -197,7 +198,7 @@ def PadArrays(edits_array, ctm_array):
             edits_pos += 1
             duration = 0.0
             confidence = 1.0
-            new_ctm_array.append([ current_time, duration, '<eps>', confidence])
+            new_ctm_array.append([current_time, duration, '<eps>', confidence])
         elif ctm_pos < ctm_len and ctm_array[ctm_pos][2] == '<eps>':
             # There was silence in the ctm, and either we're reached the end of the
             # edits sequence, or the hyp word was not '<eps>':
@@ -210,9 +211,9 @@ def PadArrays(edits_array, ctm_array):
             raise Exception("Could not align edits_array = {0} and ctm_array = {1}; "
                             "edits-position = {2}, ctm-position = {3}, "
                             "pending-edit={4}, pending-ctm-entry={5}".format(
-                    edits_array, ctm_array, edits_pos, ctm_pos,
-                    edits_array[edits_pos] if edits_pos < edits_len else None,
-                    ctm_array[ctm_pos] if ctm_pos < ctm_len else None))
+                edits_array, ctm_array, edits_pos, ctm_pos,
+                edits_array[edits_pos] if edits_pos < edits_len else None,
+                ctm_array[ctm_pos] if ctm_pos < ctm_len else None))
     assert len(new_edits_array) == len(new_ctm_array)
     return (new_edits_array, new_ctm_array)
 
@@ -222,15 +223,15 @@ def PadArrays(edits_array, ctm_array):
 # the ctm-edits file.
 def GetEditType(hyp_word, ref_word, duration):
     global oov_word
-    if hyp_word == ref_word and hyp_word !='<eps>':
+    if hyp_word == ref_word and hyp_word != '<eps>':
         return 'cor'
     elif hyp_word != '<eps>' and ref_word == '<eps>':
         return 'ins'
     elif hyp_word == '<eps>' and ref_word != '<eps>' and duration == 0.0:
         return 'del'
     elif hyp_word == oov_word and \
-         len(symbol_table) != 0 and not ref_word in symbol_table:
-        return 'cor'   # this special case is treated as correct.
+            len(symbol_table) != 0 and not ref_word in symbol_table:
+        return 'cor'  # this special case is treated as correct.
     elif hyp_word == '<eps>' == ref_word and duration > 0.0:
         # silence in hypothesis; we don't match this up with any reference word.
         return 'sil'
@@ -240,10 +241,11 @@ def GetEditType(hyp_word, ref_word, duration):
         assert hyp_word != '<eps>' and ref_word != '<eps>'
         return 'sub'
 
+
 # this prints a number with a certain number of digits after
 # the point, while removing trailing zeros.
 def FloatToString(f):
-    num_digits = 6 # we want to print 6 digits after the zero
+    num_digits = 6  # we want to print 6 digits after the zero
     g = f
     while abs(g) > 1.0:
         g *= 0.1
@@ -257,19 +259,19 @@ def OutputCtm(utterance_id, edits_array, ctm_array):
     # note: this function expects the padded entries created by PadARrays.
     assert len(edits_array) == len(ctm_array)
     channel = '1'  # this is hardcoded at both input and output, since this CTM
-                   # doesn't really represent recordings, only utterances.
+    # doesn't really represent recordings, only utterances.
     for i in range(len(edits_array)):
-        ( hyp_word, ref_word ) = edits_array[i]
-        ( start_time, duration, hyp_word2, confidence ) = ctm_array[i]
+        (hyp_word, ref_word) = edits_array[i]
+        (start_time, duration, hyp_word2, confidence) = ctm_array[i]
         if not hyp_word == hyp_word2:
             print("Error producing output CTM for edit = {0} and ctm = {1}".format(
-                    edits_array[i], ctm_array[i]), file = sys.stderr)
+                edits_array[i], ctm_array[i]), file=sys.stderr)
             sys.exit(1)
         assert hyp_word == hyp_word2
         edit_type = GetEditType(hyp_word, ref_word, duration)
         print(utterance_id, channel, FloatToString(start_time),
               FloatToString(duration), hyp_word, confidence, ref_word,
-              edit_type, file = ctm_edits_out)
+              edit_type, file=ctm_edits_out)
 
 
 def ProcessOneUtterance(utterance_id, edits_line, ctm_lines):
@@ -282,15 +284,15 @@ def ProcessOneUtterance(utterance_id, edits_line, ctm_lines):
         fields_split = edits_fields.split()
         first_fields, second_fields = fields_split[0::3], fields_split[1::3]
         if (
-            len(first_fields) != len(second_fields) or
-            (len(fields_split) >= 3 and set(fields_split[2::3]) != {';'})
+                len(first_fields) != len(second_fields) or
+                (len(fields_split) >= 3 and set(fields_split[2::3]) != {';'})
         ):
             sys.exit("get_ctm_edits.py: could not make sense of edits line: " + edits_line)
 
         edits_array = list(zip(first_fields, second_fields))
 
         # ctm_array will now become something like [ ['1', '1.010', '0.240', 'little ' ], ... ]
-        ctm_array = [ x.split() for x in ctm_lines ]
+        ctm_array = [x.split() for x in ctm_lines]
         ctm_array = []
         for line in ctm_lines:
             try:
@@ -299,10 +301,10 @@ def ProcessOneUtterance(utterance_id, edits_line, ctm_lines):
                 a = line[len(utterance_id) + 1:].split()
                 if len(a) == 4:
                     a.append(1.0)  # confidence defaults to 1.0.
-                [ channel, start, dur, word, confidence ] = a
+                [channel, start, dur, word, confidence] = a
                 if channel != '1':
                     raise Exception("Channel should be 1, got: " + channel)
-                ctm_array.append([ float(start), float(dur), word, float(confidence) ])
+                ctm_array.append([float(start), float(dur), word, float(confidence)])
             except Exception as e:
                 sys.exit("get_ctm_edits.py: error procesing ctm line {0} "
                          "... exception is: {1} {2}".format(line, type(e), str(e)))
@@ -313,8 +315,9 @@ def ProcessOneUtterance(utterance_id, edits_line, ctm_lines):
         (edits_array, ctm_array) = PadArrays(edits_array, ctm_array)
     except Exception as e:
         sys.exit("get_ctm_edits.py: error processing utterance {0}, error was: {1}".format(
-                utterance_id, str(e)))
+            utterance_id, str(e)))
     OutputCtm(utterance_id, edits_array, ctm_array)
+
 
 def ProcessData():
     num_utterances_processed = 0
@@ -332,7 +335,7 @@ def ProcessData():
         a = this_edits_line.split()
         if len(a) == 0:
             sys.exit("get_ctm_edits.py: edits_input {0} had an empty line".format(
-                    args.edits_in))
+                args.edits_in))
         utterance_id = a[0]
         utterance_id_len = len(utterance_id)
         this_utterance_ctm_lines = []
@@ -343,9 +346,8 @@ def ProcessData():
                             this_utterance_ctm_lines)
         num_utterances_processed += 1
     print("get_ctm_edits.py: processed {0} utterances".format(
-            num_utterances_processed), file=sys.stderr)
+        num_utterances_processed), file=sys.stderr)
 
 
 OpenFiles()
 ProcessData()
-

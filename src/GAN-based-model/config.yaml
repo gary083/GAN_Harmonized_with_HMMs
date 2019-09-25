@@ -6,7 +6,7 @@ dev_feat_path: 'timit_for_GAN/audio/timit-test-mfcc-nor.pkl'
 dev_orc_bnd_path: 'timit_for_GAN/audio/timit-test-orc1-bnd.pkl'
 dev_phn_path: 'timit_for_GAN/audio/timit-test-phn.pkl'
 #Target path
-match_target_path: 'timit_for_GAN/text/match_lm.48' 
+match_target_path: 'timit_for_GAN/text/match_lm.48'
 nonmatch_target_path: 'timit_for_GAN/text/nonmatch_lm.48'
 
 # Model
@@ -30,7 +30,7 @@ batch_size: 50
 epoch: 2000 # for supervised training 
 step: 10000 # for unsupervised training 
 print_step: 100
-eval_step: 200 
+eval_step: 200
 gen_iter: 1
 dis_iter: 3
 gen_lr: 0.001
