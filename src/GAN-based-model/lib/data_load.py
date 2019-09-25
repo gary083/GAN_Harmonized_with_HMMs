@@ -16,12 +16,14 @@ def read_config(path):
 
 
 class DataLoader:
+
     def __init__(
         self,
         config,
         feat_path,
         phn_path,
         orc_bnd_path,
+        meta_path,
         train_bnd_path=None,
         target_path=None,
         data_length=None,
@@ -48,11 +50,12 @@ class DataLoader:
         feat = self.load_pickle(feat_path)
         phn = self.load_pickle(phn_path)
         orc_bnd = self.load_pickle(orc_bnd_path)
+        meta = self.load_pickle(meta_path)['prefix']
         assert (len(feat) == len(phn) == len(orc_bnd))
 
         self.data_length = len(feat) if data_length is None else data_length
         self.process_feat(feat[:self.data_length])
-        self.process_label(orc_bnd[:self.data_length], phn[:self.data_length])
+        self.process_label(orc_bnd[:self.data_length], phn[:self.data_length], meta[:self.data_length])
 
         if train_bnd_path is not None:
             self.process_train_bnd(train_bnd_path)
@@ -108,6 +111,9 @@ class DataLoader:
             self.train_seq_length[idx] = len(bnd) - 1
 
     def process_feat(self, feature):
+        """
+        :param feature: mfcc / fbank
+        """
         self.feat_dim = feature[0].shape[-1]
         self.source_data = np.zeros(shape=[self.data_length, self.feat_max_length, self.feat_dim * self.concat_window],
                                     dtype='float32')
@@ -128,10 +134,24 @@ class DataLoader:
                 self.source_data[idx][l] = np.reshape(concat_feat, [-1])
             self.source_data_length[idx] = len(feat)
 
-    def process_label(self, oracle_bound, phoneme):
+    def process_label(self, oracle_bound, phoneme, meta):
+        """
+        label: boundaries, phonomes
+        """
         self.frame_label = np.zeros(shape=[self.data_length, self.feat_max_length], dtype='int32')
         self.orc_bnd = np.array(oracle_bound)
         self.phn_label = phoneme
+
+        # parse prefix-string to labels, description below
+        # https://catalog.ldc.upenn.edu/docs/LDC93S1/timit.readme.html?fbclid=IwAR3DEnjodNL10CaOQCMtQHWovY3I5Hh9JaMYpoHYW-Bz0r6_fXTowH6fjw8
+        prefixes = meta
+        split_prefixes = [p.split('_') for p in prefixes]
+        self.dialect_label, self.int2dialect, self.dialect2int = self.build_label_mapping([p[0] for p in split_prefixes])
+        self.sex_label, self.int2sex, self.sex2int = self.build_label_mapping([p[1][0] for p in split_prefixes])
+        self.speaker_label, self.int2speaker, self.speaker2int = self.build_label_mapping([p[1][1:] for p in split_prefixes])
+        self.text_type_label, self.int2text_type, self.text_type2int = self.build_label_mapping([p[2][:2] for p in split_prefixes])
+        self.sentence_label , self.int2sentence_number, self.sentence_number2int = \
+            self.build_label_mapping([p[2][2:] for p in split_prefixes])
 
         for idx, bnd, phn in zip(range(self.data_length), oracle_bound, phoneme):
             assert (len(bnd) == len(phn) + 1)
@@ -140,6 +160,18 @@ class DataLoader:
                 self.frame_label[idx][prev_b:b] = np.array([self.phn2idx[p]] * (b - prev_b))
                 prev_b = b
             self.frame_label[idx][b] = self.phn2idx[p]
+
+    def build_label_mapping(self, original_label: list):
+        """
+        :param original_label: list of original labels, len=self.data_length
+        :return: int_labels: np.array, int2label_map: dict, label2int_map: dict
+        """
+        label_set = {label for label in original_label}
+        label_list = sorted(label_set)
+        int2label_map = {i: l for i, l in enumerate(label_list)}
+        label2int_map = {l: i for i, l in enumerate(label_list)}
+        int_labels = np.array([label2int_map[label] for label in original_label], dtype='int32')
+        return int_labels, int2label_map, label2int_map
 
     def process_target(self, target_path):
         target_data = [line.strip().split() for line in open(target_path, 'r')]
@@ -193,11 +225,11 @@ class DataLoader:
         batch_target_data = np.zeros(shape=[batch_size, self.phn_max_length], dtype='int32')
         batch_target_length = np.zeros(shape=[batch_size], dtype='int32')
         for i, (seq, length) in enumerate(zip(self.target_data[batch_idx], self.target_length[batch_idx])):
-            new_seq, new_legnth = self.data_augmentation(seq, length)
-            if new_legnth > self.phn_max_length:
-                new_legnth = self.phn_max_length
-            batch_target_data[i][:new_legnth] = new_seq[:new_legnth]
-            batch_target_length[i] = new_legnth
+            new_seq, new_length = self.data_augmentation(seq, length)
+            if new_length > self.phn_max_length:
+                new_length = self.phn_max_length
+            batch_target_data[i][:new_length] = new_seq[:new_length]
+            batch_target_length[i] = new_length
         return batch_target_data, batch_target_length
 
     def data_augmentation(self, seq, length):
@@ -224,8 +256,23 @@ class DataLoader:
         self.reset_batch_pointer()
 
         for i in range(self.batch_number):
-            batch_source = self.source_data[self.pointer:self.pointer + batch_size]
-            batch_frame_label = self.frame_label[self.pointer:self.pointer + batch_size]
-            batch_source_length = self.source_data_length[self.pointer:self.pointer + batch_size]
+            batch_source = self.source_data[self.pointer:self.pointer + batch_size]  # framewise feature
+            batch_frame_label = self.frame_label[self.pointer:self.pointer + batch_size]  # framewise phoneme label
+            batch_source_length = self.source_data_length[self.pointer:self.pointer + batch_size]  # sequence length
+            batch_dialect_label = self.dialect_label[self.pointer:self.pointer + batch_size]
+            batch_sex_label = self.sex_label[self.pointer:self.pointer + batch_size]
+            batch_speaker_label = self.speaker_label[self.pointer:self.pointer + batch_size]
+            batch_text_type_label = self.text_type_label[self.pointer:self.pointer + batch_size]
+            batch_sentence_label = self.sentence_label[self.pointer:self.pointer + batch_size]
             self.update_pointer(batch_size)
-            yield batch_source, batch_frame_label, batch_source_length
+            yield {
+                'source': batch_source,
+                'frame_label': batch_frame_label,
+                'source_length': batch_source_length,
+                'dialect_label': batch_dialect_label,
+                'sex_label': batch_sex_label,
+                'speaker_label': batch_speaker_label,
+                'text_type_label': batch_text_type_label,
+                'sentence_label': batch_sentence_label,
+            }
+
