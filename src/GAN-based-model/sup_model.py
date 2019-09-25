@@ -46,8 +46,9 @@ class SupModel(ModelBase):
     def build_session(self):
         print('Building Session...')
         session = tf.Session(graph=self.graph)
-        session.run(tf.global_variables_initializer())
-        saver = tf.train.Saver(max_to_keep=3)
+        with self.graph.as_default():
+            session.run(tf.global_variables_initializer())
+            saver = tf.train.Saver(max_to_keep=3)
         return session, saver
 
     def restore(self, save_dir):

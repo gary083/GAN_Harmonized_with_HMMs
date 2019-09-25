@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .lib.data_load import AttrDict, DataLoader
+from lib.data_load import AttrDict, DataLoader
 
 
 class ModelBase(ABC):
