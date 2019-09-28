@@ -3,11 +3,10 @@ import os
 
 
 from lib import data_load
-from sup_model import SupModel
-from uns_model import UnsModel
+from models import MODEL_HUB
 
 
-def addParser():
+def add_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', type=str, default='train', help='')
     parser.add_argument('--model_type', type=str, default='uns', help='')
@@ -134,10 +133,7 @@ def main(args, config):
     config.save_path = f'{args.save_dir}/model'
 
     # build model
-    if args.model_type == 'sup':
-        g = SupModel(config)
-    else:
-        g = UnsModel(config)
+    g = MODEL_HUB[args.model_type]
     print_bar()
     print_model_parameter(config)
 
@@ -166,7 +162,7 @@ def main(args, config):
 
 
 if __name__ == "__main__":
-    parser = addParser()
+    parser = add_parser()
     args = parser.parse_args()
     config = data_load.read_config(args.config)
     main(args, config)

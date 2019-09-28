@@ -3,7 +3,7 @@ import sys
 from evalution import *
 from lib.discriminator import *
 from lib.module import *
-from model_base import ModelBase
+from models.base import ModelBase
 from lib.tf_utils import output_framewise_prob, build_session
 
 

@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 from evalution import evaluate_frame_result
-from .data_load import DataLoader
+from lib.data_load import DataLoader
 
 
 def build_session(graph: tf.Graph):
