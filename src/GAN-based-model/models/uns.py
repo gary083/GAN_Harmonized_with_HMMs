@@ -66,8 +66,11 @@ class UnsModel(ModelBase):
 
                 with tf.variable_scope('segmental_loss') as scope:
                     sep_size = (config.batch_size * config.repeat) // 2
-                    self.seg_loss = segment_loss(self.fake_sample[:sep_size], self.fake_sample[sep_size:],
-                                                 repeat_num=self.sample_rep)
+                    self.seg_loss = segment_loss(
+                        self.fake_sample[:sep_size],
+                        self.fake_sample[sep_size:],
+                        repeat_num=self.sample_rep,
+                    )
 
                 with tf.variable_scope('discriminator_loss') as scope:
                     self.real_score = tf.reduce_mean(real_sample_pred)
@@ -102,11 +105,11 @@ class UnsModel(ModelBase):
         return build_session(self.graph)
 
     def train(
-            self,
-            config,
-            data_loader,
-            dev_data_loader=None,
-            aug=False,
+        self,
+        config,
+        data_loader,
+        dev_data_loader=None,
+        aug=False,
     ):
         print('TRAINING(unsupervised)...')
         if aug:
@@ -122,8 +125,10 @@ class UnsModel(ModelBase):
             if step == 8000:  frame_temp = 0.8
             if step == 12000: frame_temp = 0.7
             for _ in range(config.dis_iter):
-                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(config.batch_size,
-                                                                                                     repeat=config.repeat)
+                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(
+                    config.batch_size,
+                    repeat=config.repeat,
+                )
                 batch_target_idx, batch_target_len = get_target_batch(batch_size)
 
                 feed_dict = {
@@ -139,8 +144,10 @@ class UnsModel(ModelBase):
                 dis_loss, _ = self.sess.run(run_list, feed_dict=feed_dict)
 
             for _ in range(config.gen_iter):
-                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(config.batch_size,
-                                                                                                     repeat=config.repeat)
+                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(
+                    config.batch_size,
+                    repeat=config.repeat,
+                )
                 batch_target_idx, batch_target_len = get_target_batch(batch_size)
 
                 feed_dict = {

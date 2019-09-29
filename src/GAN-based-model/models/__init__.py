@@ -1,6 +1,6 @@
 from .uns import UnsModel
 from .sup import SupModel
-from .uns_bert_ import UnsBertModel
+from .uns_bert import UnsBertModel
 
 
 MODEL_HUB = {

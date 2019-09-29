@@ -9,7 +9,7 @@ from models import MODEL_HUB
 def add_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', type=str, default='train', help='')
-    parser.add_argument('--model_type', type=str, default='uns', help='')
+    parser.add_argument('--model_type', type=str, default='uns_bert', help='')
     parser.add_argument('--cuda_id', type=str, default='0', help='')
     parser.add_argument('--bnd_type', type=str, default='orc', help='')
     parser.add_argument('--setting', type=str, default='match', help='')
@@ -133,7 +133,7 @@ def main(args, config):
     config.save_path = f'{args.save_dir}/model'
 
     # build model
-    g = MODEL_HUB[args.model_type]
+    g = MODEL_HUB[args.model_type](config)
     print_bar()
     print_model_parameter(config)
 

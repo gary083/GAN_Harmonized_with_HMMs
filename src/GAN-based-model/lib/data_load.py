@@ -203,18 +203,34 @@ class DataLoader:
     def get_sample_batch(self, batch_size, repeat=1):
         batch_size = batch_size // 2
         batch_idx = np.random.choice(self.data_length, batch_size, replace=False)
-        batch_idx = np.tile(batch_idx, (repeat))
-        random_pick = np.clip(np.random.normal(0.5, 0.2, [batch_size * 2 * repeat, self.phn_max_length]), 0.0, 1.0)
+        batch_idx = np.tile(batch_idx, repeat)
+        random_pick = np.clip(
+            np.random.normal(
+                0.5,
+                0.2,
+                [batch_size * 2 * repeat, self.phn_max_length]
+            ),
+            0.0,
+            1.0,
+        )
         sample_frame = np.around(
-            np.tile(self.train_bnd[batch_idx], (2, 1)) + random_pick * np.tile(self.train_bnd_range[batch_idx],
-                                                                               (2, 1))).astype('int32')
+            np.tile(self.train_bnd[batch_idx], (2, 1)) +
+            random_pick * np.tile(
+                self.train_bnd_range[batch_idx], (2, 1)
+            )
+        ).astype('int32')
         sample_source = np.tile(self.source_data[batch_idx], (2, 1, 1))[
-            np.arange(batch_size * 2 * repeat).reshape([-1, 1]), sample_frame]
+            np.arange(batch_size * 2 * repeat).reshape([-1, 1]), sample_frame
+        ]
         repeat_num = np.sum(
-            np.not_equal(sample_frame[:batch_size * repeat], sample_frame[batch_size * repeat:]).astype(np.int32),
-            axis=1)
+            np.not_equal(
+                sample_frame[:batch_size * repeat],
+                sample_frame[batch_size * repeat:],
+            ).astype(np.int32),
+            axis=1,
+        )
 
-        return sample_source, np.tile(self.train_seq_length[batch_idx], (2)), repeat_num
+        return sample_source, np.tile(self.train_seq_length[batch_idx], 2), repeat_num
 
     def get_target_batch(self, batch_size):
         batch_idx = np.random.choice(self.target_data_length, batch_size, replace=False)
