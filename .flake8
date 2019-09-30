@@ -1,0 +1,23 @@
+[flake8]
+max-line-length = 100
+ignore =
+    E125,E121,E266,E402
+    # print is allowed
+    T001, T003
+exclude =
+    .git
+    # __pycache__
+    __pycache__
+    # virtual environment
+    .venv/
+    venv/
+    env/
+    # old api
+    api/
+    # __init__s usually have pre-imported modules
+    model/**/__init__.py
+    data/**/__init__.py
+    optimizers/__init__.py
+    optimizers/radam.py
+max_complexity = 10
+statistics = true

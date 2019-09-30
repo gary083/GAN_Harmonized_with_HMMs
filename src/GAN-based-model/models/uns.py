@@ -4,7 +4,11 @@ from evalution import *
 from lib.discriminator import *
 from lib.module import *
 from models.base import ModelBase
-from lib.tf_utils import output_framewise_prob, build_session
+from lib.tf_utils import (
+    output_framewise_prob,
+    build_session,
+    predict_batch,
+)
 
 
 class UnsModel(ModelBase):
@@ -40,9 +44,6 @@ class UnsModel(ModelBase):
                 # Get framewise phoneme distribution
                 self.frame_prob, _, _ = frame2phn(self.frame_feat, config, self.frame_temp, input_len=self.frame_len,
                                                   reuse=True)
-
-                # Get framewise prediction
-                self.frame_pred = tf.argmax(self.frame_prob, axis=-1)
 
             with tf.variable_scope('discriminator') as scope:
                 # Get real phoneme sequence
@@ -173,7 +174,7 @@ class UnsModel(ModelBase):
                 step_gen_loss, step_dis_loss, step_seg_loss = 0.0, 0.0, 0.0
 
             if step % config.eval_step == 0:
-                step_fer = frame_eval(self.sess, self, dev_data_loader)
+                step_fer = frame_eval(self.predict_batch, dev_data_loader)
                 print(f'EVAL max: {max_fer:.2f} step: {step_fer:.2f}')
                 if step_fer < max_fer:
                     max_fer = step_fer
@@ -184,14 +185,13 @@ class UnsModel(ModelBase):
     def restore(self, save_dir):
         self.saver.restore(self.sess, tf.train.latest_checkpoint(save_dir))
 
-    def output_framewise_prob(self, output_path, data_loader):
-        output_framewise_prob(
-            data_loader,
+    def predict_batch(self, batch_frame_feat, batch_frame_len):
+        return predict_batch(
             self.sess,
             self.frame_feat,
             self.frame_len,
             self.frame_temp,
-            self.frame_pred,
             self.frame_prob,
-            output_path,
+            batch_frame_feat,
+            batch_frame_len,
         )

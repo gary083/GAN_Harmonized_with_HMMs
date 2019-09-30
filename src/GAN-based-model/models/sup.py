@@ -3,7 +3,11 @@ import sys
 from evalution import *
 from lib.module import *
 from models.base import ModelBase
-from lib.tf_utils import output_framewise_prob, build_session
+from lib.tf_utils import (
+    output_framewise_prob,
+    build_session,
+    predict_batch,
+)
 
 
 class SupModel(ModelBase):
@@ -25,7 +29,6 @@ class SupModel(ModelBase):
             with tf.variable_scope('generator'):
                 self.frame_prob, _, frame_log_prob = frame2phn(self.frame_feat, args, args.sample_temp,
                                                                input_len=self.frame_len)
-                self.frame_pred = tf.argmax(self.frame_prob, axis=-1)
 
             if train:
                 self.learning_rate = tf.placeholder(tf.float32, shape=[])
@@ -74,20 +77,19 @@ class SupModel(ModelBase):
 
             if epoch % 5 == 0:
                 print(f'Epoch: {epoch:5d} seq_loss: {step_seq_loss:.4f}')
-                step_fer = frame_eval(self.sess, self, args, dev_data_loader)
+                step_fer = frame_eval(self.predict_batch, dev_data_loader)
                 print(f'EVAL max: {max_fer:.2f} step: {step_fer:.2f}')
                 if step_fer < max_fer: max_fer = step_fer
             step_seq_loss = 0.0
         print('=' * 80)
 
-    def output_framewise_prob(self, output_path, data_loader):
-        output_framewise_prob(
-            data_loader,
+    def predict_batch(self, batch_frame_feat, batch_frame_len):
+        return predict_batch(
             self.sess,
             self.frame_feat,
             self.frame_len,
             self.frame_temp,
-            self.frame_pred,
             self.frame_prob,
-            output_path,
+            batch_frame_feat,
+            batch_frame_len,
         )

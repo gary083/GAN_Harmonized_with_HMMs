@@ -13,6 +13,7 @@ soundfile = "*"
 librosa = "*"
 tensorflow = "==1.13.1"
 "flake8" = "*"
+pytorch-pretrained-bert = "*"
 
 [requires]
 python_version = "3.6"

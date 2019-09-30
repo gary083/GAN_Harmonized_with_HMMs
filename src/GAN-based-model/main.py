@@ -4,6 +4,7 @@ import os
 
 from lib import data_load
 from models import MODEL_HUB
+from evalution import frame_eval
 
 
 def add_parser():
@@ -145,20 +146,28 @@ def main(args, config):
         print_training_parameter(args, config)
         g.train(config, train_data_loader, dev_data_loader)
         print_training_parameter(args, config)
-        g.output_framewise_prob(f'{args.save_dir}/train.pkl', train_data_loader)
-        g.output_framewise_prob(f'{args.save_dir}/test.pkl', dev_data_loader)
-
     elif args.mode == 'load':
         print_training_parameter(args, config)
         g.restore(args.save_dir)
         g.train(config, train_data_loader, dev_data_loader)
         print_training_parameter(args, config)
-        g.output_framewise_prob(f'{args.save_dir}/train.pkl', train_data_loader)
-        g.output_framewise_prob(f'{args.save_dir}/test.pkl', dev_data_loader)
     else:
         g.restore(args.save_dir)
-        g.output_framewise_prob(f'{args.save_dir}/train.pkl', train_data_loader)
-        g.output_framewise_prob(f'{args.save_dir}/test.pkl', dev_data_loader)
+
+    frame_eval(
+        g.predict_batch,
+        train_data_loader,
+        batch_size=config.batch_size,
+        dump=True,
+        output_path=f'{args.save_dir}/train.pkl',
+    )
+    frame_eval(
+        g.predict_batch,
+        dev_data_loader,
+        batch_size=config.batch_size,
+        dump=True,
+        output_path=f'{args.save_dir}/test.pkl',
+    )
 
 
 if __name__ == "__main__":

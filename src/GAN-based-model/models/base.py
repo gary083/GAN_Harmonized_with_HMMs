@@ -20,5 +20,5 @@ class ModelBase(ABC):
         pass
 
     @abstractmethod
-    def output_framewise_prob(self, output_path, data_loader):
+    def predict_batch(self, batch_frame_feat, batch_frame_len):
         pass
