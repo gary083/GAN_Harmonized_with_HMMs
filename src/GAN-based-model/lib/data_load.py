@@ -291,4 +291,3 @@ class DataLoader:
                 'text_type_label': batch_text_type_label,
                 'sentence_label': batch_sentence_label,
             }
-

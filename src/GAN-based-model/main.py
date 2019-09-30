@@ -16,9 +16,9 @@ def add_parser():
     parser.add_argument('--setting', type=str, default='match', help='')
     parser.add_argument('--iteration', type=int, default=1, help='')
     parser.add_argument('--aug', action='store_true', help='')
-    parser.add_argument('--data_dir', type=str, default=f'/home/guanyu/guanyu/handoff/data')
-    parser.add_argument('--save_dir', type=str, default=f'/home/guanyu/guanyu/handoff/data/save/test_model')
-    parser.add_argument('--config', type=str, default=f'/home/guanyu/guanyu/handoff/src/GAN-based-model/config.yaml')
+    parser.add_argument('--data_dir', type=str)
+    parser.add_argument('--save_dir', type=str)
+    parser.add_argument('--config', type=str)
     return parser
 
 

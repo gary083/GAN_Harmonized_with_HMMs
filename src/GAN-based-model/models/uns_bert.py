@@ -10,11 +10,10 @@ from pytorch_pretrained_bert.modeling import (
 )
 from pytorch_pretrained_bert.optimization import BertAdam
 import numpy as np
-import pickle as pk
 
 from .base import ModelBase
 from lib.torch_utils import get_tensor_from_array
-from evalution import frame_eval, evaluate_frame_result
+from evalution import frame_eval
 
 
 class UnsBertModel(ModelBase):

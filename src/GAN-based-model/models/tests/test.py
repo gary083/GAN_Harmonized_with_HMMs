@@ -41,7 +41,11 @@ class TestBertUtils(TestCase):
         self.assertTupleEqual(rank3_mask.shape, (self.N, self.T, 1))
 
     def test_get_masks(self):
-        input_mask, predict_mask = BertModel.get_masks(self.rank_2_inp, self.mask_prob, self.mask_but_no_prob)
+        input_mask, predict_mask = BertModel.get_masks(
+            self.rank_2_inp,
+            self.mask_prob,
+            self.mask_but_no_prob,
+        )
         self.assertTupleEqual(input_mask.shape, (self.N, self.T))
         self.assertTupleEqual(predict_mask.shape, (self.N, self.T))
         self.assertAlmostEqual(1 - self.mask_prob, torch.mean(predict_mask).item(), places=2)
@@ -51,7 +55,11 @@ class TestBertUtils(TestCase):
             places=2,
         )
 
-        input_mask, predict_mask = BertModel.get_masks(self.rank_3_inp, self.mask_prob, self.mask_but_no_prob)
+        input_mask, predict_mask = BertModel.get_masks(
+            self.rank_3_inp,
+            self.mask_prob,
+            self.mask_but_no_prob,
+        )
         self.assertTupleEqual(input_mask.shape, (self.N, self.T, 1))
         self.assertTupleEqual(predict_mask.shape, (self.N, self.T, 1))
         self.assertAlmostEqual(1 - self.mask_prob, torch.mean(predict_mask).item(), places=2)

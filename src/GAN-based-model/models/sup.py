@@ -1,10 +1,11 @@
 import sys
 
+import tensorflow as tf
+
 from evalution import *
 from lib.module import *
 from models.base import ModelBase
 from lib.tf_utils import (
-    output_framewise_prob,
     build_session,
     predict_batch,
 )
