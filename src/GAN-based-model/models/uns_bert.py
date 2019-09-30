@@ -13,7 +13,7 @@ import numpy as np
 
 from .base import ModelBase
 from lib.torch_utils import get_tensor_from_array
-from evalution import frame_eval
+from evalution import frame_eval, phn_eval
 
 
 class UnsBertModel(ModelBase):
@@ -66,10 +66,10 @@ class UnsBertModel(ModelBase):
 
         batch_size = config.batch_size * config.repeat
         step_feat_loss, step_target_loss = 0., 0.
-        max_fer = 100.0
+        max_err = 100.0
 
         for step in range(1, config.step + 1):
-            batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(
+            batch_sample_feat, batch_sample_len, batch_repeat_num, batch_phn_label = data_loader.get_sample_batch(
                 config.batch_size,
                 repeat=config.repeat,
             )
@@ -93,11 +93,10 @@ class UnsBertModel(ModelBase):
                 step_feat_loss, step_target_loss = 0., 0.
 
             if step % config.eval_step == 0:
-                self.target_embeddings = self.get_target_embeddings()
-                step_fer = frame_eval(self.predict_batch, dev_data_loader, batch_size=batch_size)
-                print(f'EVAL max: {max_fer:.2f} step: {step_fer:.2f}')
-                if step_fer < max_fer:
-                    max_fer = step_fer
+                step_err = self.phn_eval(data_loader, batch_size=batch_size, repeat=config.repeat)
+                print(f'EVAL max: {max_err:.2f} step: {step_err:.2f}')
+                if step_err < max_err:
+                    max_err = step_err
                     self.save(config.save_path)
 
         print('=' * 80)
@@ -121,22 +120,34 @@ class UnsBertModel(ModelBase):
     def predict_batch(self, batch_frame_feat, batch_frame_len):
         self.bert_model.eval()
         with torch.no_grad():
-            _, encoded_layers = self.bert_model.predict_feats(batch_frame_feat, batch_frame_len)
-            predict_embeddings = encoded_layers[self.align_layer_idx]  # shape: (N, T, E)
-            predict_inner_products = torch.einsum('nte,pe->ntp', predict_embeddings, self.target_embeddings)
-            frame_prob = torch.softmax(predict_inner_products, dim=-1)
+            predict_target_logits = self.bert_model.predict_targets_from_feats(
+                batch_frame_feat,
+                batch_frame_len,
+            )
+            frame_prob = torch.softmax(predict_target_logits, dim=-1)
             frame_prob = frame_prob.cpu().data.numpy()
-
         self.bert_model.train()
         return frame_prob
 
-    def get_target_embeddings(self) -> torch.Tensor:
-        test_targets = np.arange(self.config.phn_size).reshape(-1, 1)
-        test_lens = np.ones(len(test_targets))
-        _, encoded_layers = self.bert_model.predict_targets(test_targets, test_lens)
-        target_embeddings = encoded_layers[self.align_layer_idx]  # shape (phn_size, E)
-        target_embeddings = target_embeddings.squeeze()
-        return target_embeddings
+    def phn_eval(self, data_loader, batch_size, repeat):
+        self.bert_model.eval()
+        with torch.no_grad():
+            error_counts = []
+            lens = []
+            for _ in range(10):
+                batch_feat, batch_len, _, batch_phn_label = data_loader.get_sample_batch(
+                    batch_size,
+                    repeat=repeat,
+                )
+                batch_prob = self.bert_model.predict_targets_from_feats(batch_feat, batch_len)
+                batch_prob = batch_prob.cpu().data.numpy()
+                batch_pred = np.argmax(batch_prob, axis=-1)
+                error_count, label_length = phn_eval(batch_pred, batch_len, batch_phn_label, data_loader.phn_mapping)
+                error_counts.append(error_count)
+                lens.append(label_length)
+
+        self.bert_model.train()
+        return np.sum(error_counts) / np.sum(lens) * 100
 
 
 class BertModel(BertPreTrainedModel):
@@ -146,8 +157,8 @@ class BertModel(BertPreTrainedModel):
         config,
         feat_dim,
         phn_size,
-        mask_prob=0.15,
-        mask_but_no_prob=0.1,
+        mask_prob=1.0,
+        mask_but_no_prob=0.85,
     ):
         super(BertModel, self).__init__(config)
         self.mask_prob = mask_prob
@@ -209,6 +220,15 @@ class BertModel(BertPreTrainedModel):
         loss = loss_fn(output, input_targets.long()) * to_predict  # shape: (N, T)
         loss = torch.sum(loss) / (torch.sum(to_predict) + 1e-8)
         return loss, encoded_layers
+
+    def predict_targets_from_feats(self, input_feats, seq_lens):
+        input_feats = get_tensor_from_array(input_feats)
+        attention_mask = self.create_attention_mask(seq_lens, input_feats.shape[1])
+        embedding_output = self.feat_embeddings(input_feats)
+        encoded_layers = self.forward(embedding_output, attention_mask)
+        output = encoded_layers[-1]
+        output = self.target_out_layer(output)
+        return output
 
     @staticmethod
     def create_attention_mask(lens: np.array, max_len: int):

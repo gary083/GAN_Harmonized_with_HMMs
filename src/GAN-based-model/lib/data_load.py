@@ -136,12 +136,14 @@ class DataLoader:
 
     def process_label(self, oracle_bound, phoneme, meta):
         """
-        label: boundaries, phonomes
+        label: boundaries, phonemes
         """
         self.frame_label = np.zeros(shape=[self.data_length, self.feat_max_length], dtype='int32')
         self.orc_bnd = np.array(oracle_bound)
-        self.phn_label = phoneme
-
+        self.sample_phn_label = np.asarray([
+            [self.phn2idx[p] for p in phn_seq]
+            for phn_seq in phoneme
+        ])
         # parse prefix-string to labels, description below
         # https://catalog.ldc.upenn.edu/docs/LDC93S1/timit.readme.html?fbclid=IwAR3DEnjodNL10CaOQCMtQHWovY3I5Hh9JaMYpoHYW-Bz0r6_fXTowH6fjw8
         prefixes = meta
@@ -229,8 +231,13 @@ class DataLoader:
             ).astype(np.int32),
             axis=1,
         )
-
-        return sample_source, np.tile(self.train_seq_length[batch_idx], 2), repeat_num
+        sample_phn_label = self.sample_phn_label[batch_idx]
+        return (
+            sample_source,
+            np.tile(self.train_seq_length[batch_idx], 2),
+            repeat_num,
+            np.tile(sample_phn_label, 2),
+        )
 
     def get_target_batch(self, batch_size):
         batch_idx = np.random.choice(self.target_data_length, batch_size, replace=False)

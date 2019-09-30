@@ -184,7 +184,7 @@ class UnsModel(ModelBase):
                 frame_temp = 0.7
 
             for _ in range(config.dis_iter):
-                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(
+                batch_sample_feat, batch_sample_len, batch_repeat_num, _ = data_loader.get_sample_batch(
                     config.batch_size,
                     repeat=config.repeat,
                 )
@@ -203,7 +203,7 @@ class UnsModel(ModelBase):
                 dis_loss, _ = self.sess.run(run_list, feed_dict=feed_dict)
 
             for _ in range(config.gen_iter):
-                batch_sample_feat, batch_sample_len, batch_repeat_num = data_loader.get_sample_batch(
+                batch_sample_feat, batch_sample_len, batch_repeat_num, _ = data_loader.get_sample_batch(
                     config.batch_size,
                     repeat=config.repeat,
                 )

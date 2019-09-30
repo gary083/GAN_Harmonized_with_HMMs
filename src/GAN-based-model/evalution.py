@@ -1,5 +1,8 @@
-import numpy as np
 import pickle as pk
+from itertools import groupby
+
+import numpy as np
+from jiwer import wer
 
 
 def frame_eval(
@@ -41,3 +44,28 @@ def evaluate_frame_result(frame_pred, frame_label, frame_len, phn_mapping):
             if phn_mapping[frame_pred[batch_idx][idx]] != phn_mapping[frame_label[batch_idx][idx]]:
                 frame_error += 1
     return frame_num, frame_error
+
+
+def phn_eval(preds, lens, labels, phn_mapping):
+    str_preds = []
+    for pred, l in zip(preds, lens):
+        p = pred[:l]
+        p = [phn_mapping[i] for i in p]
+        p = [i for i, _ in groupby(p)]
+        str_preds.append(' '.join(p))
+
+    labels = [
+        [phn_mapping[i] for i in l] for l in labels
+    ]
+    labels = [
+        [i for i, _ in groupby(l)] for l in labels
+    ]
+    str_labels = [
+        ' '.join(l) for l in labels
+    ]
+    error_counts = [
+        wer(str_label, str_pred) * len(label)
+        for str_label, str_pred, label in zip(str_labels, str_preds, labels)
+    ]
+    return sum(error_counts), sum([len(l) for l in labels])
+
