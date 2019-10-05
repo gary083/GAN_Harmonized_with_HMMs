@@ -1,5 +1,5 @@
 #!/bin/bash
-. path.sh
+#. path.sh
 # dir=$1
 
 word_symtab=data/lang/words.txt

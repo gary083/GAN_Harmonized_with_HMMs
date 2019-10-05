@@ -38,7 +38,7 @@ Options:
   --lat-weights STR               # colon-separated string of lattice weights
 ";
 
-[ -f ./path.sh ] && . ./path.sh
+#[ -f ./path.sh ] && . ./path.sh
 . parse_options.sh || exit 1;
 
 if [ $# -lt 5 ]; then

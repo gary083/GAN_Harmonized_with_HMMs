@@ -1,5 +1,5 @@
 #!/bin/bash
-. path.sh
+#. path.sh
 
 word_symtab=data/lang/words.txt
 phone_symtab=data/lang/phones.txt

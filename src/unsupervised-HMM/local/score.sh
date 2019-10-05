@@ -4,7 +4,7 @@
 
 # See the script steps/scoring/score_kaldi_cer.sh in case you need to evalutate CER
 
-[ -f ./path.sh ] && . ./path.sh
+#[ -f ./path.sh ] && . ./path.sh
 
 # begin configuration section.
 cmd=run.pl
