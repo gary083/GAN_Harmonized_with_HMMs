@@ -12,6 +12,7 @@ def get_tensor_from_array(arr: np.array) -> torch.Tensor:
 
 
 def masked_reduce_mean(arr: torch.Tensor, mask: torch.Tensor):
+    assert(arr.shape[:2] == mask.shape[:2])
     if arr.ndimension() == 3:
         mask = mask.unsqueeze(2)
     arr = arr * mask
@@ -19,6 +20,7 @@ def masked_reduce_mean(arr: torch.Tensor, mask: torch.Tensor):
 
 
 def masked_reduce_sum(arr: torch.Tensor, mask: torch.Tensor):
+    assert(arr.shape[:2] == mask.shape[:2])
     if arr.ndimension() == 3:
         mask = mask.unsqueeze(2)
     arr = arr * mask
@@ -58,24 +60,39 @@ def cpc_loss(pred, tar, pred_mask, attention_mask, mode=''):
         neg_inner_products = neg_inner_products - max_logit
 
         exp_pos_inner_products = torch.exp(pos_inner_products)
-        mean_exp_neg_inner_products = masked_reduce_mean(
+        sum_exp_neg_inner_products = masked_reduce_sum(
             torch.exp(neg_inner_products),
             torch.flip(attention_mask, dims=[0]),
         )  # shape: (N, T)
 
         cpc = torch.mean(masked_reduce_mean(
-            torch.log(1 + mean_exp_neg_inner_products / (exp_pos_inner_products + epsilon)),
+            torch.log(1 + sum_exp_neg_inner_products / (exp_pos_inner_products + epsilon)),
             pred_mask,
         ))
     return cpc
 
 
-def segment_loss(logits, repeats, mask, sep_size):
+def intra_segment_loss(logits, repeats, mask, sep_size):
     probs = torch.softmax(logits, dim=-1)
     start_prob = probs[:sep_size]
     end_prob = probs[sep_size:]
     partial_mask = mask[:sep_size]
     error = torch.sum((start_prob - end_prob) ** 2, dim=-1)
-    return torch.mean(
-        masked_reduce_sum(error, partial_mask) / (repeats + epsilon)
-    )
+    return torch.sum(masked_reduce_sum(error, partial_mask)) / (torch.sum(repeats) + epsilon)
+
+
+def inter_segment_loss(logits, mask):
+    """
+    Implement Jensen-Shannon Divergence for multiple distributions
+    JSD = H(sum(Pi)/m) - H(Pi)/m
+    """
+    probs = torch.softmax(logits, dim=-1)  # (N, T, V)
+    mean_probs = masked_reduce_mean(probs, mask)  # (N, V)
+    H_of_mean_probs = torch.sum(-mean_probs * torch.log(mean_probs + epsilon), dim=-1)  # (N,)
+
+    Hs = torch.sum(-probs * torch.log(probs + epsilon), dim=-1)  # (N, T)
+    mean_of_Hs = masked_reduce_mean(Hs, mask)  # (N,)
+    JSDs = H_of_mean_probs - mean_of_Hs
+    JSD = torch.mean(JSDs)
+    return -JSD
+

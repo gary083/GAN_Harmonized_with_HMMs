@@ -48,10 +48,12 @@ def evaluate_frame_result(frame_pred, frame_label, frame_len, phn_mapping):
 
 def phn_eval(preds, lens, labels, phn_mapping):
     str_preds = []
+    int_preds = []
     for pred, l in zip(preds, lens):
         p = pred[:l]
         p = [phn_mapping[i] for i in p]
         p = [i for i, _ in groupby(p)]
+        int_preds.append(p)
         str_preds.append(' '.join(p))
 
     labels = [
@@ -67,5 +69,5 @@ def phn_eval(preds, lens, labels, phn_mapping):
         wer(str_label, str_pred) * len(label)
         for str_label, str_pred, label in zip(str_labels, str_preds, labels)
     ]
-    return sum(error_counts), sum([len(l) for l in labels])
+    return sum(error_counts), sum([len(l) for l in labels]), labels, int_preds
 
