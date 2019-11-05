@@ -56,7 +56,7 @@ This method developed a GAN-based model to achieve unsupervised phoneme recognit
 2.  The training scripts for [Unsupervised HMM](https://github.com/jackyyy0228/Unsupervised_HMM) <sup>[1](#Reference)</sup> .
 
 ## Acknowledgement
-**Special thanks to Che-Ping Tsai (jackyyy0228) !**
-
+**Special thanks to Che-Ping Tsai (jackyyy0228) for kaldi parts!**
+**Special thanks to Sung-Feng Huang (b02901071) for pytorch version!**
 
 
