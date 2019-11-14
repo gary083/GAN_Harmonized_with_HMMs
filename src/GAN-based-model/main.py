@@ -1,12 +1,21 @@
-import tensorflow as tf 
-import numpy as np 
-import os, json, argparse 
+import numpy as np
+import os
+import json
+import argparse
+import yaml
 
-from evalution import output_framewise_prob
-# from  lib.data_load import *
-import lib.data_load
-import uns_model
-import sup_model
+from src.data.dataset import PickleDataset
+from src.data.dataLoader import DataLoader
+from src.models.uns_model import UnsModel
+
+
+class AttrDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(AttrDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+def read_config(path):
+    return AttrDict(yaml.load(open(path, 'r')))
 
 def addParser():
     parser = argparse.ArgumentParser()
@@ -19,6 +28,7 @@ def addParser():
     parser.add_argument('--aug',            action='store_true', help='')
     parser.add_argument('--data_dir',       type=str, default=f'/home/guanyu/guanyu/handoff/data') 
     parser.add_argument('--save_dir',       type=str, default=f'/home/guanyu/guanyu/handoff/data/save/test_model') 
+    parser.add_argument('--load_ckpt',       type=str, default=f'ckpt_9800.pth') 
     parser.add_argument('--config',         type=str, default=f'/home/guanyu/guanyu/handoff/src/GAN-based-model/config.yaml') 
     return parser
 
@@ -57,7 +67,15 @@ def print_training_parameter(args, config):
         print (f'   config_path:            {args.config}')
     print_bar()     
 
-def main(args, config):
+
+if __name__ == "__main__":
+    parser = addParser()
+    args = parser.parse_args()
+    config = read_config(args.config)
+
+    ######################################################################
+    # Environment & argument settings
+    #
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda_id
 
@@ -72,88 +90,93 @@ def main(args, config):
         data_length = 3000
         target_path = os.path.join(args.data_dir, config.nonmatch_target_path)
     else: raise Exception("Invalid setting!", args.setting)
-
     print_bar()
-    # build dataloader
+
+    ######################################################################
+    # Build dataset
+    #
     if args.mode=='train' or args.mode=='load':
         # load train
-        train_data_loader = lib.data_load.data_loader(config, 
-                                                  os.path.join(args.data_dir, config.train_feat_path), 
-                                                  os.path.join(args.data_dir, config.train_phn_path), 
-                                                  os.path.join(args.data_dir, config.train_orc_bnd_path), 
-                                                  train_bnd_path=train_bnd_path, 
-                                                  target_path=target_path, 
-                                                  data_length=data_length, 
-                                                  phn_map_path=phn_map_path,
-                                                  name='DATA LOADER(train)')
-        train_data_loader.print_parameter(True)
+        train_data_set = PickleDataset(config,
+                                       os.path.join(args.data_dir, config.train_feat_path), 
+                                       os.path.join(args.data_dir, config.train_phn_path), 
+                                       os.path.join(args.data_dir, config.train_orc_bnd_path), 
+                                       train_bnd_path=train_bnd_path, 
+                                       target_path=target_path, 
+                                       data_length=data_length, 
+                                       phn_map_path=phn_map_path,
+                                       name='DATA LOADER(train)',
+                                       random_batch=True,
+                                       n_steps=config.step)
+        train_data_set.print_parameter(True)
         # load dev
-        dev_data_loader = lib.data_load.data_loader(config, 
-                                                os.path.join(args.data_dir, config.dev_feat_path), 
-                                                os.path.join(args.data_dir, config.dev_phn_path), 
-                                                os.path.join(args.data_dir, config.dev_orc_bnd_path), 
-                                                phn_map_path=phn_map_path,
-                                                name='DATA LOADER(dev)')
-        dev_data_loader.print_parameter()
+        dev_data_set = PickleDataset(config,
+                                     os.path.join(args.data_dir, config.dev_feat_path), 
+                                     os.path.join(args.data_dir, config.dev_phn_path), 
+                                     os.path.join(args.data_dir, config.dev_orc_bnd_path), 
+                                     phn_map_path=phn_map_path,
+                                     name='DATA LOADER(dev)',
+                                     mode='dev')
+        dev_data_set.print_parameter()
     else:
         # load train for evalution
-        train_data_loader = lib.data_load.data_loader(config, 
-                                                  os.path.join(args.data_dir, config.train_feat_path), 
-                                                  os.path.join(args.data_dir, config.train_phn_path), 
-                                                  os.path.join(args.data_dir, config.train_orc_bnd_path), 
-                                                  phn_map_path=phn_map_path,
-                                                  name='DATA LOADER(evalution train)')
-
-        dev_data_loader  = lib.data_load.data_loader(config,
-                                                 os.path.join(args.data_dir, config.dev_feat_path), 
-                                                 os.path.join(args.data_dir, config.dev_phn_path), 
-                                                 os.path.join(args.data_dir, config.dev_orc_bnd_path), 
-                                                 phn_map_path=phn_map_path,
-                                                 name='DATA LOADER(evalution test)')
-
-        train_data_loader.print_parameter()
-        dev_data_loader.print_parameter()
-    config.feat_dim = train_data_loader.feat_dim * config.concat_window
-    config.phn_size = train_data_loader.phn_size
-    config.mfcc_dim = train_data_loader.feat_dim
+        train_data_set = PickleDataset(config,
+                                       os.path.join(args.data_dir, config.train_feat_path), 
+                                       os.path.join(args.data_dir, config.train_phn_path), 
+                                       os.path.join(args.data_dir, config.train_orc_bnd_path), 
+                                       phn_map_path=phn_map_path,
+                                       name='DATA LOADER(evaluation train)',
+                                       mode='dev')
+        dev_data_set = PickleDataset(config,
+                                     os.path.join(args.data_dir, config.dev_feat_path), 
+                                     os.path.join(args.data_dir, config.dev_phn_path), 
+                                     os.path.join(args.data_dir, config.dev_orc_bnd_path), 
+                                     phn_map_path=phn_map_path,
+                                     name='DATA LOADER(evaluation test)',
+                                     mode='dev')
+        train_data_set.print_parameter()
+        dev_data_set.print_parameter()
+    config.feat_dim = train_data_set.feat_dim * config.concat_window
+    config.phn_size = train_data_set.phn_size
+    config.mfcc_dim = train_data_set.feat_dim
     config.save_path = f'{args.save_dir}/model'
+    config.load_path = f'{config.save_path}/{args.load_ckpt}'
 
-    # build model
-    if args.model_type == 'sup': g = sup_model.model(config)
-    else: g = uns_model.model(config)
+
+    ######################################################################
+    # Build model
+    #
+    if args.model_type == 'sup':
+        raise NotImplementedError
+    else:
+        g = UnsModel(config)
     print_bar()
     print_model_parameter(config)
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    with tf.Session(graph=g.graph) as sess:
-        print ('Building Session...')
-        sess.run(tf.global_variables_initializer())
-        saver = tf.train.Saver(max_to_keep=3)
-        print_bar()
+    print ('Building Session...')
+    print_bar()
 
-        if args.mode == 'train':
-            print_training_parameter(args, config)
-            g.train(config, sess, saver, train_data_loader, dev_data_loader, args.aug)
-            print_training_parameter(args, config)
-            output_framewise_prob(sess, g, f'{args.save_dir}/train.pkl', train_data_loader)
-            output_framewise_prob(sess, g, f'{args.save_dir}/test.pkl', dev_data_loader)
+    if args.mode == 'train':
+        print_training_parameter(args, config)
+        g.train(train_data_set, dev_data_set, args.aug)
+        print_training_parameter(args, config)
+        train_data_set.setmode('dev')
+        g.test(train_data_set, f'{args.save_dir}/train.pkl')
+        g.test(dev_data_set, f'{args.save_dir}/test.pkl')
 
-        elif args.mode == 'load':
-            print_training_parameter(args, config)
-            saver.restore(sess, tf.train.latest_checkpoint(args.save_dir))
-            g.train(config, sess, saver, train_data_loader, dev_data_loader, args.aug)
-            print_training_parameter(args, config)
-            output_framewise_prob(sess, g, f'{args.save_dir}/train.pkl', train_data_loader)
-            output_framewise_prob(sess, g, f'{args.save_dir}/test.pkl', dev_data_loader)
-        else:
-            saver.restore(sess, tf.train.latest_checkpoint(args.save_dir))
-            output_framewise_prob(sess, g, f'{args.save_dir}/train.pkl', train_data_loader)
-            output_framewise_prob(sess, g, f'{args.save_dir}/test.pkl', dev_data_loader)
+    elif args.mode == 'load':
+        print_training_parameter(args, config)
+        g.load_ckpt(config.load_path)
+        g.train(train_data_set, dev_data_set, args.aug)
+        print_training_parameter(args, config)
+        g.test(train_data_set, f'{args.save_dir}/train.pkl')
+        g.test(dev_data_set, f'{args.save_dir}/test.pkl')
 
-if __name__ == "__main__":
-    parser = addParser()
-    args = parser.parse_args()
-    config = lib.data_load.read_config(args.config)
-    main(args, config)
+    else:
+        g.load_ckpt(config.load_path)
+        g.test(train_data_set, f'{args.save_dir}/train.pkl')
+        g.test(dev_data_set, f'{args.save_dir}/test.pkl')
+
