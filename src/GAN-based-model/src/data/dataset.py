@@ -237,4 +237,4 @@ class DevDataset(Dataset):
     def __getitem__(self, index):
         feat = self.feats[index]
         frame_label = self.frame_labels[index]
-        return feat, frame_label, len(feat)
+        return feat, frame_label

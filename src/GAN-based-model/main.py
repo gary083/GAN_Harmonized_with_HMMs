@@ -26,10 +26,10 @@ def addParser():
     parser.add_argument('--setting',        type=str, default='match', help='')
     parser.add_argument('--iteration',      type=int, default=1, help='')
     parser.add_argument('--aug',            action='store_true', help='')
-    parser.add_argument('--data_dir',       type=str, default=f'/home/guanyu/guanyu/handoff/data') 
-    parser.add_argument('--save_dir',       type=str, default=f'/home/guanyu/guanyu/handoff/data/save/test_model') 
-    parser.add_argument('--load_ckpt',       type=str, default=f'ckpt_9800.pth') 
-    parser.add_argument('--config',         type=str, default=f'/home/guanyu/guanyu/handoff/src/GAN-based-model/config.yaml') 
+    parser.add_argument('--data_dir',       type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/data') 
+    parser.add_argument('--save_dir',       type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/data/save/test_model') 
+    parser.add_argument('--load_ckpt',       type=str, default=f'ckpt_9000.pth') 
+    parser.add_argument('--config',         type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/src/GAN-based-model/config.2.yaml') 
     return parser
 
 def print_bar():
@@ -98,11 +98,11 @@ if __name__ == "__main__":
     if args.mode=='train' or args.mode=='load':
         # load train
         train_data_set = PickleDataset(config,
-                                       os.path.join(args.data_dir, config.train_feat_path), 
-                                       os.path.join(args.data_dir, config.train_phn_path), 
-                                       os.path.join(args.data_dir, config.train_orc_bnd_path), 
-                                       train_bnd_path=train_bnd_path, 
-                                       target_path=target_path, 
+                                       os.path.join(args.data_dir, config.train_feat_path),
+                                       os.path.join(args.data_dir, config.train_phn_path),
+                                       os.path.join(args.data_dir, config.train_orc_bnd_path),
+                                       train_bnd_path=train_bnd_path,
+                                       target_path=target_path,
                                        data_length=data_length, 
                                        phn_map_path=phn_map_path,
                                        name='DATA LOADER(train)',
@@ -111,9 +111,9 @@ if __name__ == "__main__":
         train_data_set.print_parameter(True)
         # load dev
         dev_data_set = PickleDataset(config,
-                                     os.path.join(args.data_dir, config.dev_feat_path), 
-                                     os.path.join(args.data_dir, config.dev_phn_path), 
-                                     os.path.join(args.data_dir, config.dev_orc_bnd_path), 
+                                     os.path.join(args.data_dir, config.dev_feat_path),
+                                     os.path.join(args.data_dir, config.dev_phn_path),
+                                     os.path.join(args.data_dir, config.dev_orc_bnd_path),
                                      phn_map_path=phn_map_path,
                                      name='DATA LOADER(dev)',
                                      mode='dev')
@@ -121,16 +121,16 @@ if __name__ == "__main__":
     else:
         # load train for evalution
         train_data_set = PickleDataset(config,
-                                       os.path.join(args.data_dir, config.train_feat_path), 
-                                       os.path.join(args.data_dir, config.train_phn_path), 
-                                       os.path.join(args.data_dir, config.train_orc_bnd_path), 
+                                       os.path.join(args.data_dir, config.train_feat_path),
+                                       os.path.join(args.data_dir, config.train_phn_path),
+                                       os.path.join(args.data_dir, config.train_orc_bnd_path),
                                        phn_map_path=phn_map_path,
                                        name='DATA LOADER(evaluation train)',
                                        mode='dev')
         dev_data_set = PickleDataset(config,
-                                     os.path.join(args.data_dir, config.dev_feat_path), 
-                                     os.path.join(args.data_dir, config.dev_phn_path), 
-                                     os.path.join(args.data_dir, config.dev_orc_bnd_path), 
+                                     os.path.join(args.data_dir, config.dev_feat_path),
+                                     os.path.join(args.data_dir, config.dev_phn_path),
+                                     os.path.join(args.data_dir, config.dev_orc_bnd_path),
                                      phn_map_path=phn_map_path,
                                      name='DATA LOADER(evaluation test)',
                                      mode='dev')
@@ -163,7 +163,6 @@ if __name__ == "__main__":
         print_training_parameter(args, config)
         g.train(train_data_set, dev_data_set, args.aug)
         print_training_parameter(args, config)
-        train_data_set.setmode('dev')
         g.test(train_data_set, f'{args.save_dir}/train.pkl')
         g.test(dev_data_set, f'{args.save_dir}/test.pkl')
 

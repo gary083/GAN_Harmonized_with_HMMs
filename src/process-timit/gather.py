@@ -83,7 +83,8 @@ if __name__ == "__main__":
     wrds  = []
 
     origin_data_dir = os.path.join(timit, mode)
-    all_prefix = [file_name.split('.')[0] for file_name in os.listdir(origin_data_dir) if '.wav' in file_name]
+    all_prefix = [line.strip().split('/')[-1] for line in open(os.path.join(root, f'{mode}_video_list'), 'r')]
+    # all_prefix = [file_name.split('.')[0] for file_name in os.listdir(origin_data_dir) if '.wav' in file_name]
 
     mfcc_dir = os.path.join(root, 'mfcc', mode)
     fbank_dir = os.path.join(root, 'fbank', mode)

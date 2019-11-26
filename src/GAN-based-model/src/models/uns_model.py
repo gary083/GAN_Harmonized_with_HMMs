@@ -91,7 +91,8 @@ class UnsModel(nn.Module):
         t = trange(self.config.step)
         for step in t:
             self.step += 1
-            if self.step == 20000: fram_temp = 0.8
+            if self.step == 8000: fram_temp = 0.8
+            if self.step == 12000: fram_temp = 0.7
 
             for _ in range(self.config.dis_iter):
                 self.dis_optim.zero_grad()
@@ -101,7 +102,7 @@ class UnsModel(nn.Module):
                 losses = self.forward(sample_feat, sample_len, target_idx, target_len, frame_temp)
                 dis_loss, gp_loss = [loss.item() for loss in losses]
                 sum(losses).backward()
-                nn.utils.clip_grad_norm_(self.dis_model.parameters(), 5)
+                nn.utils.clip_grad_norm_(self.dis_model.parameters(), 5.0)
                 self.dis_optim.step()
 
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',
@@ -125,7 +126,7 @@ class UnsModel(nn.Module):
                                                     frame_temp, intra_diff_num)
                 gen_loss, seg_loss = [loss.item() for loss in losses]
                 sum(losses).backward()
-                nn.utils.clip_grad_norm_(self.gen_model.parameters(), 5)
+                nn.utils.clip_grad_norm_(self.gen_model.parameters(), 5.0)
                 self.gen_optim.step()
 
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',
@@ -174,9 +175,9 @@ class UnsModel(nn.Module):
         fers = 0
         fnums = 0
         for feat, frame_label, length in dev_source:
-            prob = self.gen_model(feat.to(device), mask_len=length)
+            prob = self.gen_model(feat.to(device), mask_len=length).detach().cpu().numpy()
 
-            pred = prob.argmax(-1).detach().cpu().numpy()
+            pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
 
             pred = [p[:l] for p, l in zip(pred, length)]
@@ -196,11 +197,10 @@ class UnsModel(nn.Module):
         probs = []
         for feat, frame_label, length in dev_source:
             feat, _ = pad_sequence(feat, max_len=self.config.feat_max_length)
-            prob = self.gen_model(feat.to(device), mask_len=length)
-            # prob, _ = pad_sequence(prob, max_len=self.config.feat_max_length)
-            probs.extend(prob.detach().cpu().numpy())
+            prob = self.gen_model(feat.to(device), mask_len=length).detach().cpu().numpy()
+            probs.extend(prob)
 
-            pred = prob.argmax(-1).detach().cpu().numpy()
+            pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
 
             pred = [p[:l] for p, l in zip(pred, length)]

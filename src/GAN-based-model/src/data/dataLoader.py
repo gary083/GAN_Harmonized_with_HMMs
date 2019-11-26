@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader, RandomSampler
 from torch.distributions.normal import Normal
 from src.data.dataset import PickleDataset
 from functools import partial
+from src.lib.utils import pad_sequence as pad_unsort_sequence
 
 def _collate_source_fn(l, repeat=6):
     l.sort(key=lambda x: x[0].shape[1], reverse=True)
@@ -31,12 +32,11 @@ def _collate_target_fn(l):
     return feats, seq_lengths
 
 def _collate_dev_fn(l):
-    l.sort(key=lambda x: x[0].shape[0], reverse=True)
-    feats, frame_labels, lengths = zip(*l)
+    # l.sort(key=lambda x: x[0].shape[0], reverse=True)
+    feats, frame_labels = zip(*l)
 
-    feats = pad_sequence(feats, batch_first=True, padding_value=0)
-    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=0).int()
-    lengths = torch.tensor(lengths).int()
+    feats, _ = pad_unsort_sequence(feats, pad_value=0)
+    frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=0, device='cpu')
     return feats, frame_labels, lengths
 
 def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=True, drop_last=True):
