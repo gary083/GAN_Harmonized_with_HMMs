@@ -110,6 +110,7 @@ class PickleDataset(Dataset):
     def process_label(self, orc_bnd, phn_label):
         self.frame_labels = []
         for bnd, phn in zip(orc_bnd, phn_label):
+            assert len(bnd) == len(phn) + 1
             frame_label = []
             for prev_b, b, p in zip(bnd, bnd[1:], phn):
                 frame_label += [self.phn2idx[p]] * (b-prev_b)

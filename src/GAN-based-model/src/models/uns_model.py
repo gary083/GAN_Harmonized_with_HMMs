@@ -102,7 +102,7 @@ class UnsModel(nn.Module):
                 losses = self.forward(sample_feat, sample_len, target_idx, target_len, frame_temp)
                 dis_loss, gp_loss = [loss.item() for loss in losses]
                 sum(losses).backward()
-                nn.utils.clip_grad_norm_(self.dis_model.parameters(), 5.0)
+                d_clip_grad = nn.utils.clip_grad_norm_(self.dis_model.parameters(), 5.0)
                 self.dis_optim.step()
 
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',
@@ -126,7 +126,7 @@ class UnsModel(nn.Module):
                                                     frame_temp, intra_diff_num)
                 gen_loss, seg_loss = [loss.item() for loss in losses]
                 sum(losses).backward()
-                nn.utils.clip_grad_norm_(self.gen_model.parameters(), 5.0)
+                g_clip_grad = nn.utils.clip_grad_norm_(self.gen_model.parameters(), 300.0)
                 self.gen_optim.step()
 
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',

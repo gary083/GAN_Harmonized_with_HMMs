@@ -57,7 +57,8 @@ class WeakDiscriminator(nn.Module):
         self.ngram = ngram
         self.max_len = max_len
 
-        self.emb_bag = nn.Embedding(phn_size, dis_emb_dim)
+        self.emb_bag = torch.rand(phn_size, dis_emb_dim, dtype=torch.float, device=device, requires_grad=True)
+        # self.emb_bag = nn.Embedding(phn_size, dis_emb_dim)
         self.emb_input = torch.arange(phn_size, device=device).reshape(1, -1)
 
         self.conv_1 = nn.ModuleList([
@@ -83,7 +84,8 @@ class WeakDiscriminator(nn.Module):
             self.linear = nn.Linear(4*hidden_dim2, 1)
 
     def embedding(self, x):
-        return x @ self.emb_bag.weight
+        return x @ self.emb_bag
+        # return x @ self.emb_bag.weight
         # size = x.size()
         # x = x.reshape(-1, size[-1])
         # x = self.emb_bag(self.emb_input.expand_as(x), per_sample_weights=x)

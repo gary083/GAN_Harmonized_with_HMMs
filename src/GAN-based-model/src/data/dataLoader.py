@@ -39,6 +39,15 @@ def _collate_dev_fn(l):
     frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=0, device='cpu')
     return feats, frame_labels, lengths
 
+def _collate_sup_fn(l):
+    l.sort(key=lambda x: x[0].shape[0], reverse=True)
+    feats, frame_labels = zip(*l)
+    # print(max([len(f) for f in feats]), max([len(f) for f in frame_labels]))
+
+    feats, _ = pad_unsort_sequence(feats, pad_value=0)
+    frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=-100, device='cpu')
+    return feats, frame_labels, lengths
+
 def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=True, drop_last=True):
     assert random_batch
     source_collate_fn = partial(_collate_source_fn, repeat=repeat)
@@ -51,6 +60,11 @@ def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=Tr
 
 def get_dev_data_loader(dataset, batch_size, shuffle=False, drop_last=False):
     loader = DataLoader(dataset.dev, batch_size=batch_size, collate_fn=_collate_dev_fn,
+                        shuffle=shuffle, drop_last=drop_last)
+    return loader
+
+def get_sup_data_loader(dataset, batch_size, shuffle=True, drop_last=True):
+    loader = DataLoader(dataset.dev, batch_size=batch_size, collate_fn=_collate_sup_fn,
                         shuffle=shuffle, drop_last=drop_last)
     return loader
 

@@ -7,6 +7,7 @@ import yaml
 from src.data.dataset import PickleDataset
 from src.data.dataLoader import DataLoader
 from src.models.uns_model import UnsModel
+from src.models.sup_model import SupModel
 
 
 class AttrDict(dict):
@@ -29,7 +30,7 @@ def addParser():
     parser.add_argument('--data_dir',       type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/data') 
     parser.add_argument('--save_dir',       type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/data/save/test_model') 
     parser.add_argument('--load_ckpt',       type=str, default=f'ckpt_9000.pth') 
-    parser.add_argument('--config',         type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/src/GAN-based-model/config.2.yaml') 
+    parser.add_argument('--config',         type=str, default=f'/home/r06942045/myProjects/GAN_Harmonized_with_HMMs/src/GAN-based-model/config.yaml') 
     return parser
 
 def print_bar():
@@ -147,7 +148,7 @@ if __name__ == "__main__":
     # Build model
     #
     if args.model_type == 'sup':
-        raise NotImplementedError
+        g = SupModel(config)
     else:
         g = UnsModel(config)
     print_bar()
