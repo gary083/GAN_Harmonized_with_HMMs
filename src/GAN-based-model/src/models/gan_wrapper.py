@@ -13,6 +13,14 @@ class DisWrapper(nn.Module):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.model = WeakDiscriminator(*args, **kwargs)
+        self._spec_init()
+
+    def _spec_init(self):
+        for name, para in self.model.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(para.data)
+            elif 'bias' in name:
+                nn.init.zeros_(para.data)
 
     def calc_gp(self, real, real_len, fake, fake_len):
         """
@@ -76,6 +84,14 @@ class GenWrapper(nn.Module):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.model = Frame2Phn(*args, **kwargs)
+        self._spec_init()
+
+    def _spec_init(self):
+        for name, para in self.model.named_parameters():
+            if 'weight' in name:
+                nn.init.xavier_uniform_(para.data)
+            elif 'bias' in name:
+                nn.init.zeros_(para.data)
 
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)

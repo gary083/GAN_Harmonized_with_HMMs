@@ -57,10 +57,7 @@ class WeakDiscriminator(nn.Module):
         self.ngram = ngram
         self.max_len = max_len
 
-        self.emb_bag = torch.rand(phn_size, dis_emb_dim, dtype=torch.float, device=device, requires_grad=True)
-        # self.emb_bag = nn.Embedding(phn_size, dis_emb_dim)
-        self.emb_input = torch.arange(phn_size, device=device).reshape(1, -1)
-
+        self.emb_bag = nn.Embedding(phn_size, dis_emb_dim)
         self.conv_1 = nn.ModuleList([
             nn.Conv1d(dis_emb_dim, hidden_dim1, 3, padding=1),
             nn.Conv1d(dis_emb_dim, hidden_dim1, 5, padding=2),
@@ -84,12 +81,7 @@ class WeakDiscriminator(nn.Module):
             self.linear = nn.Linear(4*hidden_dim2, 1)
 
     def embedding(self, x):
-        return x @ self.emb_bag
-        # return x @ self.emb_bag.weight
-        # size = x.size()
-        # x = x.reshape(-1, size[-1])
-        # x = self.emb_bag(self.emb_input.expand_as(x), per_sample_weights=x)
-        # return x.reshape(*size[:-1], -1)
+        return x @ self.emb_bag.weight
 
     def mask_pool(self, output, lengths=None):
         """ Mean pooling of masked elements """

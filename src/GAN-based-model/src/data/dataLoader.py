@@ -7,7 +7,7 @@ from functools import partial
 from src.lib.utils import pad_sequence as pad_unsort_sequence
 
 def _collate_source_fn(l, repeat=6):
-    l.sort(key=lambda x: x[0].shape[1], reverse=True)
+    # l.sort(key=lambda x: x[0].shape[1], reverse=True)
     batch_size  = len(l)
     feats, bnds, bnd_ranges, seq_lengths = zip(*l)
 
@@ -19,12 +19,11 @@ def _collate_source_fn(l, repeat=6):
     random_pick = torch.clamp(torch.randn_like(bnds) * 0.2 + 0.5, 0, 1)
     sample_frame = torch.round(bnds + random_pick * bnd_ranges).long()
     sample_source = feats[torch.arange(batch_size * 2 * repeat).reshape(-1, 1), sample_frame]
-    # repeat_num: should be named diff_num, used for calculating loss
     intra_diff_num = (sample_frame[:batch_size * repeat] != sample_frame[batch_size * repeat:]).sum(1).int()
     return sample_source, seq_lengths, intra_diff_num 
 
 def _collate_target_fn(l):
-    l.sort(key=lambda x: x[0].shape[0], reverse=True)
+    # l.sort(key=lambda x: x[0].shape[0], reverse=True)
     feats, seq_lengths = zip(*l)
 
     feats = pad_sequence(feats, batch_first=True, padding_value=0).long()
@@ -48,7 +47,7 @@ def _collate_sup_fn(l):
     frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=-100, device='cpu')
     return feats, frame_labels, lengths
 
-def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=True, drop_last=True):
+def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=False, drop_last=True):
     assert random_batch
     source_collate_fn = partial(_collate_source_fn, repeat=repeat)
     source = DataLoader(dataset.source, batch_size=batch_size//2,

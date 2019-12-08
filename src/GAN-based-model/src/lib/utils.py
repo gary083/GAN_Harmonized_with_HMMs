@@ -25,7 +25,7 @@ def get_mask_from_lengths(lengths):
     return mask
 
 def gen_real_sample(input_idx, input_len, phn_size):
-    return masked_out(torch.eye(phn_size)[input_idx], input_len)
+    return masked_out(F.one_hot(input_idx, phn_size), input_len, axis=1).float()
 
 def pad_seq(sequence, pad_value=0, max_len=float('inf'), device=device):
     batch_size = len(sequence)

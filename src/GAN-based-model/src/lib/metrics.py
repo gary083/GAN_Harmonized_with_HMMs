@@ -9,6 +9,13 @@ def get_phoneseq(frame_labels):
     phone_seq = [key for key, group in groupby(frame_labels)]
     return phone_seq
 
+def frame_eval(pred, frame_label, length):
+    """ Calculate FER with count of errors and total counts """
+    pred = [p[:l] for p, l in zip(pred, length)]
+    frame_label = [f[:l] for f, l in zip(frame_label, length)]
+    frame_error, frame_num = calc_fer(pred, frame_label)
+    return frame_error, frame_num, frame_error / frame_num
+
 def calc_fer(prediction : List[torch.Tensor],
             ground_truth : List[torch.Tensor]) -> float :
 

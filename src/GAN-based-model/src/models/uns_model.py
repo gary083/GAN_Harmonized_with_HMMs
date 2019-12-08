@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from src.data.dataLoader import get_data_loader, get_dev_data_loader, sampler
 from src.models.gan_wrapper import GenWrapper, DisWrapper
 from src.lib.utils import gen_real_sample, pad_sequence
-from src.lib.metrics import calc_per, calc_fer
+from src.lib.metrics import frame_eval
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,8 +30,13 @@ class UnsModel(nn.Module):
         self.config = config
         self.step = 0
 
-        self.gen_model = GenWrapper(config.feat_dim, config.phn_size, config.gen_hidden_size).to(device)
-        self.dis_model = DisWrapper(config.phn_size, config.dis_emb_size, config.dis_hidden_1_size, config.dis_hidden_2_size,
+        self.gen_model = GenWrapper(config.feat_dim,
+                                    config.phn_size,
+                                    config.gen_hidden_size).to(device)
+        self.dis_model = DisWrapper(config.phn_size,
+                                    config.dis_emb_size,
+                                    config.dis_hidden_1_size,
+                                    config.dis_hidden_2_size,
                                     max_len=config.phn_max_length).to(device)
 
         self.gen_optim = torch.optim.Adam(self.gen_model.parameters(),
@@ -44,8 +49,8 @@ class UnsModel(nn.Module):
         sys.stdout.write(cout_word+'\n')
         sys.stdout.flush()
 
-    def forward(self, sample_feat, sample_len, target_idx, target_len,
-                frame_temp, intra_diff_num=None):
+    def forward(self, sample_feat, sample_len, target_idx, target_len, frame_temp,
+                intra_diff_num=None):
         sample_feat = sample_feat.to(device)
 
         soft_prob = self.gen_model(sample_feat, frame_temp, sample_len)
@@ -60,11 +65,11 @@ class UnsModel(nn.Module):
             seg_loss = self.gen_model.calc_intra_loss(soft_prob[:batch_size],
                                                       soft_prob[batch_size:],
                                                       intra_diff_num)
-            return g_loss, self.config.seg_loss_ratio*seg_loss, fake_sample
+            return g_loss + self.config.seg_loss_ratio*seg_loss, seg_loss, fake_sample
 
         else:
             d_loss, gp_loss = self.dis_model.calc_d_loss(real_sample, fake_sample)
-            return d_loss, self.config.penalty_ratio*gp_loss
+            return d_loss + self.config.penalty_ratio*gp_loss, gp_loss
 
     def train(self, train_data_set, dev_data_set=None, aug=False):
         print ('TRAINING(unsupervised)...')
@@ -99,20 +104,19 @@ class UnsModel(nn.Module):
                 sample_feat, sample_len, intra_diff_num = next(train_source)
                 target_idx, target_len = next(train_target)
 
-                losses = self.forward(sample_feat, sample_len, target_idx, target_len, frame_temp)
-                dis_loss, gp_loss = [loss.item() for loss in losses]
-                sum(losses).backward()
+                dis_loss, gp_loss = self.forward(sample_feat, sample_len,
+                                                 target_idx, target_len,
+                                                 frame_temp)
+                dis_loss.backward()
                 d_clip_grad = nn.utils.clip_grad_norm_(self.dis_model.parameters(), 5.0)
                 self.dis_optim.step()
 
+                dis_loss = dis_loss.item()
+                gp_loss = gp_loss.item()
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',
                               gp_loss=f'{gp_loss:.2f}',
                               gen_loss=f'{gen_loss:.2f}',
                               seg_loss=f'{seg_loss:.5f}')
-
-                # just for security
-                for loss in losses:
-                    del loss
 
             self.write_log('D_Loss', {"dis_loss": dis_loss,
                                       "gp_loss": gp_loss})
@@ -122,21 +126,19 @@ class UnsModel(nn.Module):
                 sample_feat, sample_len, intra_diff_num = next(train_source)
                 target_idx, target_len = next(train_target)
 
-                *losses, fake_sample = self.forward(sample_feat, sample_len, target_idx, target_len,
-                                                    frame_temp, intra_diff_num)
-                gen_loss, seg_loss = [loss.item() for loss in losses]
-                sum(losses).backward()
-                g_clip_grad = nn.utils.clip_grad_norm_(self.gen_model.parameters(), 300.0)
+                gen_loss, seg_loss, fake_sample = self.forward(sample_feat, sample_len,
+                                                               target_idx, target_len,
+                                                               frame_temp, intra_diff_num)
+                gen_loss.backward()
+                g_clip_grad = nn.utils.clip_grad_norm_(self.gen_model.parameters(), 5.0)
                 self.gen_optim.step()
 
+                gen_loss = gen_loss.item()
+                seg_loss = seg_loss.item()
                 t.set_postfix(dis_loss=f'{dis_loss:.2f}',
                               gp_loss=f'{gp_loss:.2f}',
                               gen_loss=f'{gen_loss:.2f}',
                               seg_loss=f'{seg_loss:.5f}')
-
-                # just for security
-                for loss in losses:
-                    del loss
 
             self.write_log('G_Loss', {"gen_loss": gen_loss,
                                       'seg_loss': seg_loss})
@@ -172,18 +174,12 @@ class UnsModel(nn.Module):
     def dev(self, dev_data_set):
         dev_source = get_dev_data_loader(dev_data_set, batch_size=256) 
         self.gen_model.eval()
-        fers = 0
-        fnums = 0
+        fers, fnums = 0, 0
         for feat, frame_label, length in dev_source:
             prob = self.gen_model(feat.to(device), mask_len=length).detach().cpu().numpy()
-
             pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
-
-            pred = [p[:l] for p, l in zip(pred, length)]
-            frame_label = [f[:l] for f, l in zip(frame_label, length)]
-
-            frame_error, frame_num = calc_fer(pred, frame_label)
+            frame_error, frame_num, _ = frame_eval(pred, frame_label, length)
             fers += frame_error
             fnums += frame_num
         step_fer = fers / fnums * 100
@@ -192,21 +188,16 @@ class UnsModel(nn.Module):
     def test(self, dev_data_set, file_path):
         dev_source = get_dev_data_loader(dev_data_set, batch_size=256) 
         self.gen_model.eval()
-        fers = 0
-        fnums = 0
+        fers, fnums = 0, 0
         probs = []
         for feat, frame_label, length in dev_source:
             feat, _ = pad_sequence(feat, max_len=self.config.feat_max_length)
             prob = self.gen_model(feat.to(device), mask_len=length).detach().cpu().numpy()
-            probs.extend(prob)
-
             pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
+            frame_error, frame_num, _ = frame_eval(pred, frame_label, length)
 
-            pred = [p[:l] for p, l in zip(pred, length)]
-            frame_label = [f[:l] for f, l in zip(frame_label, length)]
-
-            frame_error, frame_num = calc_fer(pred, frame_label)
+            probs.extend(prob)
             fers += frame_error
             fnums += frame_num
         step_fer = fers / fnums * 100

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.lib.modules import MLP, masked_out
+from src.lib.modules import MLP, FCNorm, masked_out
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -31,7 +31,7 @@ class Frame2Phn(nn.Module):
             prob: (batch, timesteps, phn_size)
         """
         output = self.model(x)
-        output += self.sample_noise(output)
+        # output += self.sample_noise(output)
         prob = self.softmax(output / temp)
         if mask_len is not None:
             prob = masked_out(prob, mask_len, axis=1)

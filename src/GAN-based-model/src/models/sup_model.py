@@ -114,13 +114,6 @@ class SupModel(nn.Module):
             feat, _ = pad_sequence(feat, max_len=self.config.feat_max_length)
             prob = self.model(feat.to(device), mask_len=length).detach().cpu().numpy()
             pred = prob.argmax(-1)
-            for i, (p1, p2, f1) in enumerate(zip(prob.max(-1), pred, frame_label)):
-                p1 = p1[:length[i]]
-                p2 = p2[:length[i]]
-                f1 = f1[:length[i]]
-                for ip1, ip2, if1 in zip(p1, p2, f1):
-                    print(ip1, ip2, if1)
-                print()
             frame_label = frame_label.numpy()
             frame_error, frame_num, _ = self.frame_eval(pred, frame_label, length)
 
