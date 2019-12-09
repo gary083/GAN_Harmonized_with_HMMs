@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from src.models.discriminator import WeakDiscriminator
 from src.models.generator import Frame2Phn
-from src.lib.utils import get_mask_from_lengths, pad_sequence
+from src.lib.utils import pad_sequence
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -47,14 +47,14 @@ class DisWrapper(nn.Module):
         gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
         return gradient_penalty
 
-    def calc_g_loss(self, real, fake):
+    def calc_g_loss(self, real, real_len, fake, fake_len):
         """
         Inputs:
             real: list of (len, phn_size)
             fake: list of (len, phn_size)
         """
-        real, real_len = pad_sequence(real, sample_gram=self.model.ngram, max_len=self.model.max_len)
-        fake, fake_len = pad_sequence(fake, sample_gram=self.model.ngram, max_len=self.model.max_len)
+        real = pad_sequence(real, sample_gram=self.model.ngram, max_len=self.model.max_len)
+        fake = pad_sequence(fake, sample_gram=self.model.ngram, max_len=self.model.max_len)
 
         real_pred = self.model(real, real_len)
         fake_pred = self.model(fake, fake_len)
@@ -62,14 +62,14 @@ class DisWrapper(nn.Module):
         g_loss = real_pred.mean() - fake_pred.mean()
         return g_loss
 
-    def calc_d_loss(self, real, fake):
+    def calc_d_loss(self, real, real_len, fake, fake_len):
         """
         Inputs:
             real: list of (len, phn_size)
             fake: list of (len, phn_size)
         """
-        real, real_len = pad_sequence(real, sample_gram=self.model.ngram, max_len=self.model.max_len)
-        fake, fake_len = pad_sequence(fake, sample_gram=self.model.ngram, max_len=self.model.max_len)
+        real = pad_sequence(real, sample_gram=self.model.ngram, max_len=self.model.max_len)
+        fake = pad_sequence(fake, sample_gram=self.model.ngram, max_len=self.model.max_len)
 
         real_pred = self.model(real, real_len)
         fake_pred = self.model(fake, fake_len)

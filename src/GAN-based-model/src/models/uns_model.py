@@ -7,7 +7,6 @@ import sys
 import _pickle as pk
 import numpy as np
 from tqdm import tqdm, trange
-from tqdm_logger import seclog, log, atten, note, warning, flush
 from torch.utils.tensorboard import SummaryWriter
 
 from src.data.dataLoader import get_data_loader, get_dev_data_loader, sampler
@@ -61,14 +60,16 @@ class UnsModel(nn.Module):
             batch_size = soft_prob.size(0) // 2
             intra_diff_num = intra_diff_num.to(device)
 
-            g_loss = self.dis_model.calc_g_loss(real_sample, fake_sample)
+            g_loss = self.dis_model.calc_g_loss(real_sample, target_len,
+                                                fake_sample, sample_len)
             seg_loss = self.gen_model.calc_intra_loss(soft_prob[:batch_size],
                                                       soft_prob[batch_size:],
                                                       intra_diff_num)
             return g_loss + self.config.seg_loss_ratio*seg_loss, seg_loss, fake_sample
 
         else:
-            d_loss, gp_loss = self.dis_model.calc_d_loss(real_sample, fake_sample)
+            d_loss, gp_loss = self.dis_model.calc_d_loss(real_sample, target_len,
+                                                         fake_sample, sample_len)
             return d_loss + self.config.penalty_ratio*gp_loss, gp_loss
 
     def train(self, train_data_set, dev_data_set=None, aug=False):
@@ -191,7 +192,7 @@ class UnsModel(nn.Module):
         fers, fnums = 0, 0
         probs = []
         for feat, frame_label, length in dev_source:
-            feat, _ = pad_sequence(feat, max_len=self.config.feat_max_length)
+            feat = pad_sequence(feat, max_len=self.config.feat_max_length)
             prob = self.gen_model(feat.to(device), mask_len=length).detach().cpu().numpy()
             pred = prob.argmax(-1)
             frame_label = frame_label.numpy()

@@ -184,8 +184,7 @@ class TargetDataset(Dataset):
 
 
 class RandomTargetDataset(TargetDataset):
-    """For random batch.
-    """
+    """ For random batch. """
     def __init__(self, target_data, n_steps):
         super().__init__(target_data)
         self.n_steps = n_steps
@@ -215,8 +214,7 @@ class SourceDataset(Dataset):
 
 
 class RandomSourceDataset(SourceDataset):
-    """For random batch.
-    """
+    """ For random batch. """
     def __init__(self, data_length, feats, train_bnd, train_bnd_range, train_seq_length, n_steps):
         super().__init__(data_length, feats, train_bnd, train_bnd_range, train_seq_length)
         self.n_steps = n_steps

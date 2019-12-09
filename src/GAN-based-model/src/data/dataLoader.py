@@ -33,18 +33,19 @@ def _collate_target_fn(l):
 def _collate_dev_fn(l):
     # l.sort(key=lambda x: x[0].shape[0], reverse=True)
     feats, frame_labels = zip(*l)
+    lengths = torch.tensor([len(feat) for feat in feats])
 
-    feats, _ = pad_unsort_sequence(feats, pad_value=0)
-    frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=0, device='cpu')
+    feats = pad_sequence(feats, batch_first=True, padding_value=0)
+    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=0)
     return feats, frame_labels, lengths
 
 def _collate_sup_fn(l):
     l.sort(key=lambda x: x[0].shape[0], reverse=True)
     feats, frame_labels = zip(*l)
-    # print(max([len(f) for f in feats]), max([len(f) for f in frame_labels]))
+    lengths = torch.tensor([len(feat) for feat in feats])
 
-    feats, _ = pad_unsort_sequence(feats, pad_value=0)
-    frame_labels, lengths = pad_unsort_sequence(frame_labels, pad_value=-100, device='cpu')
+    feats = pad_sequence(feats, batch_first=True, padding_value=0)
+    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=-100)
     return feats, frame_labels, lengths
 
 def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=False, drop_last=True):
@@ -71,91 +72,3 @@ def sampler(data_loader):
     while True:
         for data in data_loader:
             yield data
-
-
-if __name__ == '__main__':
-    """
-        args
-            concat_window   : concat window size
-        phn_max_length      : length of phone sequence
-        feat_path           : feature data
-        phn_path            : phone data
-        orc_bnd_path        : oracle boundaries
-        train_bnd_path      : trained boundaries
-        target_path         : text data
-        sep_number          : num of non-matching data
-        name                :
-    """
-    import argparse
-    args = argparse.ArgumentParser()
-    audio_path = '/home/r06942045/myData/usr_model/timit_v1/audio'
-    bnd_type = 'orc' # ori/orc/...?
-    sep_number = None
-    timit_set  = 'timit_v1'
-    root_path  = '/home/r06942045/myData/usr_model'
-    text_path  = f'{root_path}/{timit_set}/text'
-    target_path = f'{text_path}/match_lm.48'
-    args.concat_window = 11
-    args.phn_max_length = 70
-    args.feat_max_length = 777
-    args.train_feat_path = f'{audio_path}/timit-train-mfcc-nor.pkl'
-    args.train_phn_path = f'{audio_path}/timit-train-phn.pkl'
-    args.train_orc_bnd_path = f'{audio_path}/timit-train-orc-bnd.pkl'
-    args.train_bnd_path = f'{audio_path}/timit-train-{bnd_type}-bnd.pkl'
-    args.step = 80000
-    args.dev_phn_max_length = 70
-    args.dev_feat_path = f'{audio_path}/timit-test-mfcc-nor.pkl'
-    args.dev_phn_path = f'{audio_path}/timit-test-phn.pkl'
-    args.dev_orc_bnd_path = f'{audio_path}/timit-test-orc-bnd.pkl'
-    train_data_set = PickleDataset(args,
-                                   args.concat_window,
-                                   args.phn_max_length,
-                                   args.train_feat_path,
-                                   args.train_phn_path,
-                                   args.train_orc_bnd_path,
-                                   args.train_bnd_path,
-                                   target_path,
-                                   sep_number=sep_number,
-                                   name='DATA LOADER(train)',
-                                   random_batch=True,
-                                   n_steps=args.step)
-    source_loader, target_loader = get_data_loader(train_data_set, 50)
-    dev_data_set = PickleDataset(args,
-                                 args.concat_window,
-                                 args.dev_phn_max_length,
-                                 args.dev_feat_path,
-                                 args.dev_phn_path,
-                                 args.dev_orc_bnd_path,
-                                 name='DATA LOADER(dev)',
-                                 mode='dev')
-    dev_loader = get_dev_data_loader(dev_data_set, 50)
-    args.feat_dim = train_data_set.feat_dim * args.concat_window
-    args.phn_size = train_data_set.phn_size
-    args.sil_idx  = train_data_set.sil_idx
-    args.mfcc_dim = train_data_set.feat_dim
-    print(args)
-    for sample, length in target_loader:
-        print(sample.shape)
-        print(length)
-        print()
-        break
-    for sample, length, intra_diffN in source_loader:
-        print(sample)
-        print(sample.shape)
-        # print(length.max())
-        # print(intra_diffN.dtype)
-        print()
-        break
-    for sample, frame_label, length in dev_loader:
-        print(sample.shape)
-        print(frame_label)
-        print(length)
-        print()
-        break
-    print('='*80)
-    generator = sampler(dev_loader)
-    print(next(generator)[2])
-    for i in range(len(dev_loader)-1):
-        print(next(generator)[2])
-    print(next(generator)[2])
-

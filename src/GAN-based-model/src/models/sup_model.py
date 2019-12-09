@@ -7,14 +7,12 @@ import sys
 import _pickle as pk
 import numpy as np
 from tqdm import tqdm, trange
-from tqdm_logger import seclog, log, atten, note, warning, flush
 from torch.utils.tensorboard import SummaryWriter
 
-from src.data.dataLoader import get_data_loader, get_dev_data_loader, sampler, get_sup_data_loader
-from src.models.gan_wrapper import GenWrapper, DisWrapper
+from src.data.dataLoader import get_dev_data_loader, get_sup_data_loader
 from src.models.generator import Frame2Phn
-from src.lib.utils import gen_real_sample, pad_sequence
-from src.lib.metrics import calc_per, calc_fer
+from src.lib.utils import pad_sequence
+from src.lib.metrics import frame_eval
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -41,12 +39,6 @@ class SupModel(nn.Module):
         sys.stdout.write(cout_word+'\n')
         sys.stdout.flush()
 
-    def frame_eval(self, pred, frame_label, length):
-        pred = [p[:l] for p, l in zip(pred, length)]
-        frame_label = [f[:l] for f, l in zip(frame_label, length)]
-        frame_error, frame_num = calc_fer(pred, frame_label)
-        return frame_error, frame_num, frame_error / frame_num
-
     def train(self, train_data_set, dev_data_set=None, aug=False):
         print ('TRAINING(supervised)...')
         self.log_writer = SummaryWriter(self.config.save_path)
@@ -68,7 +60,7 @@ class SupModel(nn.Module):
 
                 pred = prob.argmax(-1).detach().cpu().numpy()
                 frame_label = frame_label.numpy()
-                _, _, fer = self.frame_eval(pred, frame_label, length)
+                _, _, fer = frame_eval(pred, frame_label, length)
                 t.set_postfix(seq_loss=f'{seq_loss:.4f}', FER=f'{fer:.4f}')
 
                 self.step += 1
@@ -98,7 +90,7 @@ class SupModel(nn.Module):
             prob = self.model(feat.to(device), mask_len=length).detach().cpu().numpy()
             pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
-            frame_error, frame_num, _ = self.frame_eval(pred, frame_label, length)
+            frame_error, frame_num, _ = frame_eval(pred, frame_label, length)
             fers += frame_error
             fnums += frame_num
         step_fer = fers / fnums * 100
@@ -111,11 +103,11 @@ class SupModel(nn.Module):
         fnums = 0
         probs = []
         for feat, frame_label, length in dev_source:
-            feat, _ = pad_sequence(feat, max_len=self.config.feat_max_length)
+            feat = pad_sequence(feat, max_len=self.config.feat_max_length)
             prob = self.model(feat.to(device), mask_len=length).detach().cpu().numpy()
             pred = prob.argmax(-1)
             frame_label = frame_label.numpy()
-            frame_error, frame_num, _ = self.frame_eval(pred, frame_label, length)
+            frame_error, frame_num, _ = frame_eval(pred, frame_label, length)
 
             probs.extend(prob)
             fers += frame_error

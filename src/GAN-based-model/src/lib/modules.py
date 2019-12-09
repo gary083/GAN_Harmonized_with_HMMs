@@ -132,16 +132,11 @@ class Conv1dNorm(nn.Module):
         return y
 
 
-def masked_out(outputs, lengths, axis=2):
+def masked_out(outputs, lengths):
+    """ Mask out for (Batch, Channel, Length) """
     mask = torch.zeros_like(outputs)
-    if axis == 2:
-        for i, len_ in enumerate(lengths):
-            mask[i, :, :int(len_)] = 1
-    elif axis == 1:
-        for i, len_ in enumerate(lengths):
-            mask[i, :int(len_)] = 1
-    else:
-        raise('Not implemented: masked_out() with axis not in {1, 2}')
+    for i, len_ in enumerate(lengths):
+        mask[i, :, :int(len_)] = 1
     return outputs * mask
 
 
