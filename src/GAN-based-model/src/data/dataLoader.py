@@ -1,13 +1,12 @@
 import torch
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader, RandomSampler
-from torch.distributions.normal import Normal
+from torch.utils.data import DataLoader, Sampler, BatchSampler
 from src.data.dataset import PickleDataset
 from functools import partial
-from src.lib.utils import pad_sequence as pad_unsort_sequence
+import random
+
 
 def _collate_source_fn(l, repeat=6):
-    # l.sort(key=lambda x: x[0].shape[1], reverse=True)
     batch_size  = len(l)
     feats, bnds, bnd_ranges, seq_lengths = zip(*l)
 
@@ -23,42 +22,49 @@ def _collate_source_fn(l, repeat=6):
     return sample_source, seq_lengths, intra_diff_num 
 
 def _collate_target_fn(l):
-    # l.sort(key=lambda x: x[0].shape[0], reverse=True)
     feats, seq_lengths = zip(*l)
 
     feats = pad_sequence(feats, batch_first=True, padding_value=0).long()
     seq_lengths = torch.tensor(seq_lengths).int()
     return feats, seq_lengths
 
-def _collate_dev_fn(l):
-    # l.sort(key=lambda x: x[0].shape[0], reverse=True)
+def _collate_sup_fn(l, padding_label=-100):
     feats, frame_labels = zip(*l)
     lengths = torch.tensor([len(feat) for feat in feats])
 
     feats = pad_sequence(feats, batch_first=True, padding_value=0)
-    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=0)
+    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=padding_label)
     return feats, frame_labels, lengths
 
-def _collate_sup_fn(l):
-    l.sort(key=lambda x: x[0].shape[0], reverse=True)
-    feats, frame_labels = zip(*l)
-    lengths = torch.tensor([len(feat) for feat in feats])
 
-    feats = pad_sequence(feats, batch_first=True, padding_value=0)
-    frame_labels = pad_sequence(frame_labels, batch_first=True, padding_value=-100)
-    return feats, frame_labels, lengths
+class RandomBatchSampler(BatchSampler):
+    def __init__(self, data_source, batch_size):
+        self.data_source = data_source
+        self.batch_size = batch_size
+
+    def __iter__(self):
+        while True:
+            yield random.sample(range(len(self.data_source)), self.batch_size)
+
+    def __len__(self):
+        return len(self.data_source)
+
 
 def get_data_loader(dataset, batch_size, repeat=6, random_batch=True, shuffle=False, drop_last=True):
     assert random_batch
     source_collate_fn = partial(_collate_source_fn, repeat=repeat)
-    source = DataLoader(dataset.source, batch_size=batch_size//2,
-                        collate_fn=source_collate_fn, shuffle=shuffle, drop_last=drop_last)
     target_collate_fn = _collate_target_fn
-    target = DataLoader(dataset.target, batch_size=batch_size*6,
-                        collate_fn=target_collate_fn, shuffle=shuffle, drop_last=drop_last)
+    if random_batch:
+        source = DataLoader(dataset.source,
+                            batch_sampler=RandomBatchSampler(dataset.source, batch_size//2),
+                            collate_fn=source_collate_fn)
+        target = DataLoader(dataset.target,
+                            batch_sampler=RandomBatchSampler(dataset.source, batch_size*6),
+                            collate_fn=target_collate_fn)
     return source, target
 
 def get_dev_data_loader(dataset, batch_size, shuffle=False, drop_last=False):
+    _collate_dev_fn = partial(_collate_sup_fn, padding_label=-100)
     loader = DataLoader(dataset.dev, batch_size=batch_size, collate_fn=_collate_dev_fn,
                         shuffle=shuffle, drop_last=drop_last)
     return loader
@@ -67,8 +73,3 @@ def get_sup_data_loader(dataset, batch_size, shuffle=True, drop_last=True):
     loader = DataLoader(dataset.dev, batch_size=batch_size, collate_fn=_collate_sup_fn,
                         shuffle=shuffle, drop_last=drop_last)
     return loader
-
-def sampler(data_loader):
-    while True:
-        for data in data_loader:
-            yield data

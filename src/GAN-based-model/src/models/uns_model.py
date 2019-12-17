@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm, trange
 from torch.utils.tensorboard import SummaryWriter
 
-from src.data.dataLoader import get_data_loader, get_dev_data_loader, sampler
+from src.data.dataLoader import get_data_loader, get_dev_data_loader
 from src.models.gan_wrapper import GenWrapper, DisWrapper
 from src.lib.utils import gen_real_sample, pad_sequence
 from src.lib.metrics import frame_eval
@@ -82,9 +82,7 @@ class UnsModel(nn.Module):
         train_source, train_target = get_data_loader(train_data_set,
                                                      batch_size=self.config.batch_size,
                                                      repeat=self.config.repeat)
-
-        train_source = sampler(train_source)
-        train_target = sampler(train_target)
+        train_source, train_target = iter(train_source), iter(train_target)
 
         gen_loss, dis_loss, seg_loss, gp_loss = 0, 0, 0, 0
         step_gen_loss, step_dis_loss, step_seg_loss, step_gp_loss = 0, 0, 0, 0

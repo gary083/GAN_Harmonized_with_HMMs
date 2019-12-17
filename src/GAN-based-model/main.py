@@ -106,9 +106,7 @@ if __name__ == "__main__":
                                        target_path=target_path,
                                        data_length=data_length, 
                                        phn_map_path=phn_map_path,
-                                       name='DATA LOADER(train)',
-                                       random_batch=True,
-                                       n_steps=config.step)
+                                       name='DATA LOADER(train)')
         train_data_set.print_parameter(True)
         # load dev
         dev_data_set = PickleDataset(config,

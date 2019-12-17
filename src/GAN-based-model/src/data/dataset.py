@@ -9,51 +9,34 @@ from torch.utils.data import Dataset
 
 class PickleDataset(Dataset):
     """
-    Input Arguments:
-        config
-            concat_window   : concat window size
-            phn_max_length  : length of phone sequence
-            feat_max_length : length of feat sequence
-        feat_path           : feature data
-        phn_path            : phone data
-        orc_bnd_path        : oracle boundaries
-        train_bnd_path      : trained boundaries
-        target_path         : text data
-        data_length         : num of non-matching data
-        name                :
-        n_steps             : instead of iterating epochs, random n_step batches
-
     Instance Variables:
+        self.phn_size       : 48
         self.phn2idx        : 48 phns -> 48 indices
         self.idx2phn        : 48 indices -> 48 phns
         self.phn_mapping    : 48 indices -> 39 phns
         self.sil_idx        : 
         self.feat_dim       : 39
-        self.data_length
-        self.source
-        self.target
-        self.dev
+        self.source         : source dataset
+        self.target         : target dataset
+        self.dev            : dev dataset
     """
-    def __init__(self, config, feat_path, phn_path, orc_bnd_path,
-                 train_bnd_path=None, target_path=None, data_length=None,
-                 phn_map_path='./phones.60-48-39.map.txt', name='DATA LOADER',
-                 random_batch=False, n_steps=None, mode='train'):
+    def __init__(self, config,
+                 feat_path,                                 # feat data path
+                 phn_path,                                  # phone data path
+                 orc_bnd_path,                              # oracle boundary data path
+                 train_bnd_path=None,                       # pretrained boundary data path
+                 target_path=None,                          # text data path
+                 data_length=None,                          # num of non-matching data, None would be set to len(feats)
+                 phn_map_path='./phones.60-48-39.map.txt',
+                 name='DATA LOADER',
+                 mode='train'):
         super().__init__()
+        args = locals()
+        self.add_to_self_attr(args)
 
         cout_word = f'{name}: loading    '
         sys.stdout.write(cout_word)
         sys.stdout.flush()
-        self.concat_window   = config.concat_window
-        self.phn_max_length  = config.phn_max_length
-        self.feat_max_length = config.feat_max_length
-        self.sample_var      = config.sample_var
-        self.feat_path       = feat_path
-        self.phn_path        = phn_path
-        self.orc_bnd_path    = orc_bnd_path
-        self.train_bnd_path  = train_bnd_path
-        self.target_path     = target_path
-        self.random_batch    = random_batch
-        self.n_steps         = n_steps
 
         self.read_phn_map(phn_map_path)
 
@@ -80,6 +63,17 @@ class PickleDataset(Dataset):
         sys.stdout.flush()
         print ('='*80)
 
+    def add_to_self_attr(self, args):
+        for k, v in args.items():
+            if k not in ['self', '__class__']:
+                if k == 'config':
+                    self.concat_window   = v.concat_window     # concat window size
+                    self.phn_max_length  = v.phn_max_length    # max length of phone sequence
+                    self.feat_max_length = v.feat_max_length   # max length of feat sequence
+                    self.sample_var      = v.sample_var
+                else:
+                    setattr(self, k, v)
+
     def read_phn_map(self, phn_map_path):
         phn_mapping = {}
         with open(phn_map_path, 'r') as f:
@@ -97,10 +91,11 @@ class PickleDataset(Dataset):
         self.sil_idx = self.phn2idx['sil']
 
     def process_feat(self, feats):
+        assert len(feats) == self.data_length
         half_window = (self.concat_window-1) // 2
         self.feat_dim = feats[0].shape[-1]
         self.feats = []
-        for feat in feats[:self.data_length]:
+        for feat in feats:
             _feat_ = np.concatenate([np.tile(feat[0], (half_window, 1)), feat,
                                      np.tile(feat[-1], (half_window, 1))], axis=0)
             feature = torch.tensor([np.reshape(_feat_[l : l+self.concat_window], [-1])
@@ -108,6 +103,7 @@ class PickleDataset(Dataset):
             self.feats.append(feature)
 
     def process_label(self, orc_bnd, phn_label):
+        assert len(orc_bnd) == len(phn_label) == self.data_length
         self.frame_labels = []
         for bnd, phn in zip(orc_bnd, phn_label):
             assert len(bnd) == len(phn) + 1
@@ -136,22 +132,12 @@ class PickleDataset(Dataset):
 
     def create_datasets(self, mode):
         if mode == 'train':
-            if self.random_batch and self.n_steps:
-                self.source = RandomSourceDataset(self.data_length,
-                                                  self.feats,
-                                                  self.train_bnd,
-                                                  self.train_bnd_range,
-                                                  self.train_seq_length,
-                                                  self.n_steps)
-                self.target = RandomTargetDataset(self.target_data, self.n_steps)
-            elif self.n_steps:
-                self.source = SourceDataset(self.data_length,
-                                            self.feats,
-                                            self.train_bnd,
-                                            self.train_bnd_range,
-                                            self.train_seq_length)
-                self.target = TargetDataset(self.target_data)
-        self.dev = DevDataset(self.data_length, self.feats, self.frame_labels)
+            self.source = SourceDataset(self.feats,
+                                        self.train_bnd,
+                                        self.train_bnd_range,
+                                        self.train_seq_length)
+            self.target = TargetDataset(self.target_data)
+        self.dev = DevDataset(self.feats, self.frame_labels)
 
     def print_parameter(self, target=False):
         print ('Data Loader Parameter:')
@@ -183,27 +169,16 @@ class TargetDataset(Dataset):
         return feat, len(feat)
 
 
-class RandomTargetDataset(TargetDataset):
-    """ For random batch. """
-    def __init__(self, target_data, n_steps):
-        super().__init__(target_data)
-        self.n_steps = n_steps
-
-    def __getitem__(self, index):
-        index = random.randrange(super().__len__())
-        return super().__getitem__(index)
-
-
 class SourceDataset(Dataset):
-    def __init__(self, data_length, feats, train_bnd, train_bnd_range, train_seq_length):
-        self.data_length = data_length
+    def __init__(self, feats, train_bnd, train_bnd_range, train_seq_length):
         self.feats = feats
         self.train_bnd = train_bnd
         self.train_bnd_range = train_bnd_range
         self.train_seq_length = train_seq_length
+        assert len(feats) == len(train_bnd) == len(train_bnd_range) == len(train_seq_length)
 
-    def __len__(self, ):
-        return self.data_length
+    def __len__(self):
+        return len(self.feats)
 
     def __getitem__(self, index):
         feat = self.feats[index]
@@ -213,25 +188,14 @@ class SourceDataset(Dataset):
         return feat, train_bnd, train_bnd_range, train_seq_length
 
 
-class RandomSourceDataset(SourceDataset):
-    """ For random batch. """
-    def __init__(self, data_length, feats, train_bnd, train_bnd_range, train_seq_length, n_steps):
-        super().__init__(data_length, feats, train_bnd, train_bnd_range, train_seq_length)
-        self.n_steps = n_steps
-
-    def __getitem__(self, index):
-        index = random.randrange(super().__len__())
-        return super().__getitem__(index)
-
-
 class DevDataset(Dataset):
-    def __init__(self, data_length, feats, frame_labels):
-        self.data_length = data_length
+    def __init__(self, feats, frame_labels):
         self.feats = feats
         self.frame_labels = frame_labels
+        assert len(feats) == len(frame_labels)
 
-    def __len__(self, ):
-        return self.data_length
+    def __len__(self):
+        return len(self.feats)
 
     def __getitem__(self, index):
         feat = self.feats[index]
